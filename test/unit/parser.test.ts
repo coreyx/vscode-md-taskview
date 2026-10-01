@@ -142,4 +142,25 @@ Some introductory paragraph text without tasks.
     expect(h1.tasks[7].cleanText).toBe('Combine bold with italic words in a single line');
     expect(h1.tasks[8].cleanText).toBe('Maintain snake_case_identifier and math 2 * 3 = 6 intact');
   });
+
+  it('should generate heading slugs and associate parentHeadingSlug on child tasks', () => {
+    const markdown = `
+# Milestone 1: Project Foundation & Extension Scaffolding (MVP - Part 1)
+- [ ] TASK-1.1: Extension Scaffolding
+  - [ ] Subtask 1.1.1
+## Milestone 2: Task Checkbox State Cycling
+- [x] TASK-2.1: State cycling
+`;
+    const spec = MarkdownASTParser.parse(markdown, 'auth', dummyFileUri, dummyFolderUri);
+
+    expect(spec.headings.length).toBe(1);
+    const h1 = spec.headings[0];
+    expect(h1.slug).toBe('milestone-1-project-foundation--extension-scaffolding-mvp---part-1');
+    expect(h1.tasks[0].parentHeadingSlug).toBe('milestone-1-project-foundation--extension-scaffolding-mvp---part-1');
+    expect(h1.tasks[0].subTasks[0].parentHeadingSlug).toBe('milestone-1-project-foundation--extension-scaffolding-mvp---part-1');
+
+    const h2 = h1.children[0];
+    expect(h2.slug).toBe('milestone-2-task-checkbox-state-cycling');
+    expect(h2.tasks[0].parentHeadingSlug).toBe('milestone-2-task-checkbox-state-cycling');
+  });
 });

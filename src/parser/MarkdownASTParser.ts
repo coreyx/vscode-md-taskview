@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import { BracketRange, HeadingNode, SpecGroup, TaskNode, TaskStats } from '../models/types.js';
 import { StateTemplateEngine } from '../templates/StateTemplateEngine.js';
+import { Slugifier } from './Slugifier.js';
 
 export class MarkdownASTParser {
   /**
@@ -20,6 +21,7 @@ export class MarkdownASTParser {
     const lines = content.split(/\r?\n/);
     const rootTasks: TaskNode[] = [];
     const headings: HeadingNode[] = [];
+    const slugBuilder = Slugifier.createBuilder();
 
     // Heading stack to manage depth hierarchy (levels 1-6)
     const headingStack: HeadingNode[] = [];
@@ -40,6 +42,7 @@ export class MarkdownASTParser {
       if (headingMatch) {
         const level = headingMatch[1].length;
         const label = this.stripMarkdownFormatting(headingMatch[2].trim());
+        const slug = slugBuilder.add(label);
 
         const newHeading: HeadingNode = {
           type: 'heading',
@@ -48,6 +51,7 @@ export class MarkdownASTParser {
           label,
           level,
           line: lineIndex,
+          slug,
           children: [],
           tasks: [],
           stats: { totalCountable: 0, completedCount: 0, inProgressCount: 0, cancelledCount: 0 },
@@ -108,6 +112,7 @@ export class MarkdownASTParser {
           subTasks: [],
           isCompleted,
           parentHeadingId: currentHeading?.id,
+          parentHeadingSlug: currentHeading?.slug,
         };
 
         // Determine hierarchy based on indentation

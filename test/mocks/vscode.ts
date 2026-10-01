@@ -149,8 +149,23 @@ export const commands = {
 
 export let lastShownTextDocument: { doc: any; options?: any } | undefined;
 export let lastShownErrorMessage: string | undefined;
+export let closedTabs: any[] = [];
+
+export let mockTabGroups: { all: any[]; close: (tab: any) => Promise<boolean> } = {
+  all: [],
+  close: async (tab: any) => {
+    closedTabs.push(tab);
+    return true;
+  },
+};
+
+export function resetMockTabGroups() {
+  mockTabGroups.all = [];
+  closedTabs = [];
+}
 
 export const window = {
+  tabGroups: mockTabGroups,
   showTextDocument: async (doc: any, options?: any) => {
     lastShownTextDocument = { doc, options };
     return {

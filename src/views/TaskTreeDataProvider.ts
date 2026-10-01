@@ -140,7 +140,7 @@ export class TaskTreeDataProvider implements vscode.TreeDataProvider<TaskTreeNod
         item.command = {
           command: 'mdTaskView.jumpToSource',
           title: 'Jump to Heading',
-          arguments: [element.fileUri, element.line],
+          arguments: [element.fileUri, element.line, element.slug],
         };
         return item;
       }
@@ -175,7 +175,7 @@ export class TaskTreeDataProvider implements vscode.TreeDataProvider<TaskTreeNod
         item.command = {
           command: 'mdTaskView.jumpToSource',
           title: 'Jump to Task',
-          arguments: [element.fileUri, element.line],
+          arguments: [element.fileUri, element.line, element.parentHeadingSlug],
         };
 
         return item;

@@ -38,6 +38,7 @@ export interface TaskNode {
   subTasks: TaskNode[];
   isCompleted: boolean;
   parentHeadingId?: string;
+  parentHeadingSlug?: string;
 }
 
 export interface HeadingNode {
@@ -47,6 +48,7 @@ export interface HeadingNode {
   label: string;
   level: number;
   line: number;
+  slug?: string;
   children: HeadingNode[];
   tasks: TaskNode[];
   stats: TaskStats;

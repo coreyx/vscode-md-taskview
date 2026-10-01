@@ -4,14 +4,27 @@ import { ConfigurationManager } from '../config/ConfigurationManager.js';
 export class NavigationCommands {
   /**
    * Navigates to the source task or heading location, respecting workbench editor associations or extension configuration.
+   * If opening in Markdown Preview, uses the heading slug fragment so the preview webview scrolls to the target section.
    */
   public static async jumpToSource(
     fileUri: vscode.Uri,
     line: number,
-    configManager: ConfigurationManager = ConfigurationManager.getInstance()
+    slugOrConfig?: string | ConfigurationManager,
+    configManager?: ConfigurationManager
   ): Promise<void> {
     try {
-      const config = configManager.getConfig();
+      let slug: string | undefined;
+      let actualConfigManager: ConfigurationManager;
+
+      if (slugOrConfig instanceof ConfigurationManager) {
+        slug = undefined;
+        actualConfigManager = slugOrConfig;
+      } else {
+        slug = slugOrConfig;
+        actualConfigManager = configManager || ConfigurationManager.getInstance();
+      }
+
+      const config = actualConfigManager.getConfig();
       const customEditor = this.getCustomEditorForMarkdown();
 
       const shouldOpenPreview =
@@ -19,8 +32,30 @@ export class NavigationCommands {
         (config.openEditor === 'auto' && Boolean(customEditor));
 
       if (shouldOpenPreview) {
-        const targetUri = fileUri.with({ fragment: `L${line + 1}` });
+        const targetUri = slug
+          ? fileUri.with({ fragment: slug })
+          : fileUri.with({ fragment: `L${line + 1}` });
         const viewType = customEditor || 'vscode.markdown.preview.editor';
+
+        // If a preview tab for this file is already open, close it so vscode.openWith re-resolves with the new fragment
+        if (vscode.window.tabGroups?.all) {
+          for (const group of vscode.window.tabGroups.all) {
+            for (const tab of group.tabs) {
+              const input = tab.input;
+              if (
+                input &&
+                typeof input === 'object' &&
+                'viewType' in input &&
+                'uri' in input &&
+                ((input as any).viewType === viewType || (input as any).viewType === 'markdown.preview') &&
+                (input as any).uri?.fsPath === fileUri.fsPath
+              ) {
+                await vscode.window.tabGroups.close(tab);
+              }
+            }
+          }
+        }
+
         try {
           await vscode.commands.executeCommand('vscode.openWith', targetUri, viewType);
           return;

@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.6] - 2026-10-01
+
+### Fixed
+- **Markdown Preview Navigation & Scrolling:** Fixed an issue where clicking a task or milestone while Markdown Preview is the active/default editor opened the document but failed to scroll to the clicked location. Headings now generate GitHub/VS Code-compatible anchor slugs (e.g. `#milestone-1-project-foundation`), and tasks are mapped to their parent heading's slug, allowing VS Code's Markdown preview webview to resolve the heading anchor and scroll directly to the selected milestone or task.
+- **Preview Tab Re-Resolution:** Handled already-open Markdown Preview tabs via `vscode.window.tabGroups` so clicking different milestones or tasks in succession re-navigates and scrolls the preview to the newly selected section.
+
 ## [0.1.5] - 2026-10-01
 
 ### Added

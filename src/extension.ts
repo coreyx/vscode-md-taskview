@@ -38,8 +38,8 @@ export async function activate(context: vscode.ExtensionContext) {
       await treeDataProvider.reloadSpecs();
       vscode.window.showInformationMessage('Markdown Tasks: Refreshed.');
     }),
-    vscode.commands.registerCommand('mdTaskView.jumpToSource', async (fileUri: vscode.Uri, line: number) => {
-      await NavigationCommands.jumpToSource(fileUri, line, configManager);
+    vscode.commands.registerCommand('mdTaskView.jumpToSource', async (fileUri: vscode.Uri, line: number, slug?: string) => {
+      await NavigationCommands.jumpToSource(fileUri, line, slug, configManager);
     }),
     vscode.commands.registerCommand('mdTaskView.toggleState', async (node?: TaskTreeNode) => {
       await StateCommands.toggleTaskState(node);
