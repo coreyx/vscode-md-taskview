@@ -1,0 +1,263 @@
+{
+  "name": "vscode-md-taskview",
+  "displayName": "Markdown Tasks View",
+  "description": "Visual, hierarchical tree view for Markdown specification task lists (GFM & Obsidian Tasks)",
+  "version": "0.1.0",
+  "publisher": "coreyx",
+  "author": "Corey Struzan",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/coreyx/vscode-md-taskview.git"
+  },
+  "engines": {
+    "vscode": "^1.88.0"
+  },
+  "categories": [
+    "Other",
+    "Visualization",
+    "Programming Languages"
+  ],
+  "keywords": [
+    "markdown",
+    "tasks",
+    "spec",
+    "obsidian",
+    "checklist",
+    "todo"
+  ],
+  "main": "./dist/extension.js",
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "mdTaskView-container",
+          "title": "Markdown Tasks",
+          "icon": "$(checklist)"
+        }
+      ]
+    },
+    "views": {
+      "mdTaskView-container": [
+        {
+          "id": "mdTaskView.tasksView",
+          "name": "Markdown Tasks"
+        }
+      ]
+    },
+    "viewsWelcome": [
+      {
+        "view": "mdTaskView.tasksView",
+        "contents": "No specification task files found matching `spec/*/tasks.md`.\n[Create Sample Spec](command:mdTaskView.createSampleSpec)\n[Open Settings](command:workbench.action.openSettings?mdTaskView)"
+      }
+    ],
+    "commands": [
+      {
+        "command": "mdTaskView.refresh",
+        "title": "Refresh Tasks",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "mdTaskView.toggleState",
+        "title": "Toggle Task State",
+        "icon": "$(circle-large-outline)"
+      },
+      {
+        "command": "mdTaskView.toggleFilterCompleted",
+        "title": "Filter Completed Tasks",
+        "icon": "$(filter)"
+      },
+      {
+        "command": "mdTaskView.createSampleSpec",
+        "title": "Create Sample Spec"
+      },
+      {
+        "command": "mdTaskView.setStateNotStarted",
+        "title": "Not Started [ ]",
+        "icon": "$(circle-large-outline)"
+      },
+      {
+        "command": "mdTaskView.setStateInProgress",
+        "title": "In Progress [/]",
+        "icon": "$(sync)"
+      },
+      {
+        "command": "mdTaskView.setStateDone",
+        "title": "Done [x]",
+        "icon": "$(pass-filled)"
+      },
+      {
+        "command": "mdTaskView.setStateCancelled",
+        "title": "Cancelled [-]",
+        "icon": "$(circle-slash)"
+      },
+      {
+        "command": "mdTaskView.setStateClarification",
+        "title": "Needs Clarification [?]",
+        "icon": "$(question)"
+      },
+      {
+        "command": "mdTaskView.setStateImportant",
+        "title": "Important [!]",
+        "icon": "$(warning)"
+      }
+    ],
+    "submenus": [
+      {
+        "id": "mdTaskView.taskStateSubmenu",
+        "label": "Set Task State"
+      }
+    ],
+    "menus": {
+      "view/title": [
+        {
+          "command": "mdTaskView.toggleFilterCompleted",
+          "when": "view == mdTaskView.tasksView",
+          "group": "navigation@1"
+        },
+        {
+          "command": "mdTaskView.refresh",
+          "when": "view == mdTaskView.tasksView",
+          "group": "navigation@2"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "mdTaskView.toggleState",
+          "when": "view == mdTaskView.tasksView && viewItem == taskItem",
+          "group": "inline"
+        },
+        {
+          "submenu": "mdTaskView.taskStateSubmenu",
+          "when": "view == mdTaskView.tasksView && viewItem == taskItem",
+          "group": "1_state"
+        }
+      ],
+      "mdTaskView.taskStateSubmenu": [
+        {
+          "command": "mdTaskView.setStateNotStarted",
+          "group": "1_obsidian@1"
+        },
+        {
+          "command": "mdTaskView.setStateInProgress",
+          "group": "1_obsidian@2"
+        },
+        {
+          "command": "mdTaskView.setStateDone",
+          "group": "1_obsidian@3"
+        },
+        {
+          "command": "mdTaskView.setStateCancelled",
+          "group": "1_obsidian@4"
+        },
+        {
+          "command": "mdTaskView.setStateClarification",
+          "group": "1_obsidian@5"
+        },
+        {
+          "command": "mdTaskView.setStateImportant",
+          "group": "1_obsidian@6"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "Markdown Task View",
+      "properties": {
+        "mdTaskView.specPathPattern": {
+          "type": "string",
+          "default": "spec/*",
+          "description": "Glob pattern or directory path relative to workspace root where spec folders are located."
+        },
+        "mdTaskView.taskFileName": {
+          "type": "string",
+          "default": "tasks.md",
+          "description": "File name containing task definitions inside each spec folder."
+        },
+        "mdTaskView.includePatterns": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [
+            "spec/*/tasks.md"
+          ],
+          "description": "File patterns to search for markdown task lists."
+        },
+        "mdTaskView.excludePatterns": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [
+            "**/node_modules/**",
+            "**/dist/**",
+            "**/.git/**"
+          ],
+          "description": "File patterns to exclude from spec searching."
+        },
+        "mdTaskView.stateTemplate": {
+          "type": "string",
+          "enum": [
+            "Standard (GFM)",
+            "Obsidian Tasks",
+            "Custom"
+          ],
+          "default": "Standard (GFM)",
+          "description": "Active task state template for parsing and cycling task states."
+        },
+        "mdTaskView.customTemplatePath": {
+          "type": "string",
+          "default": "",
+          "description": "Path to a custom *.jsonc state template file (used when stateTemplate is 'Custom')."
+        },
+        "mdTaskView.strikeThroughCompleted": {
+          "type": "boolean",
+          "default": true,
+          "description": "Render completed and cancelled task labels with strikethrough styling."
+        },
+        "mdTaskView.showProgressCount": {
+          "type": "boolean",
+          "default": true,
+          "description": "Display completion statistics (completed/total) on headings and spec groups."
+        },
+        "mdTaskView.autoSyncWithDisk": {
+          "type": "boolean",
+          "default": true,
+          "description": "Automatically update the tree view when markdown files change on disk."
+        },
+        "mdTaskView.hideCompletedByDefault": {
+          "type": "boolean",
+          "default": false,
+          "description": "Hide completed tasks when the workspace opens."
+        },
+        "mdTaskView.useH1AsGroupName": {
+          "type": "boolean",
+          "default": false,
+          "description": "Use the first level-1 heading in tasks.md as the group title instead of the folder name."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run package",
+    "compile": "node esbuild.js",
+    "watch": "node esbuild.js --watch",
+    "typecheck": "tsc --noEmit",
+    "test:unit": "vitest run",
+    "package": "node esbuild.js --production"
+  },
+  "dependencies": {
+    "fast-glob": "^3.3.2",
+    "jsonc-parser": "^3.2.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.24",
+    "@types/vscode": "^1.88.0",
+    "esbuild": "^0.20.2",
+    "typescript": "^5.4.2",
+    "vitest": "^1.4.0"
+  }
+}

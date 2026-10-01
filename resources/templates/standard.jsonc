@@ -1,0 +1,27 @@
+{
+  // Standard GitHub-Flavored Markdown (GFM) checklist states
+  "name": "Standard (GFM)",
+  "description": "Standard binary checkbox states ([ ] and [x])",
+  "defaultState": " ",
+  "states": [
+    {
+      "char": " ",
+      "id": "pending",
+      "label": "Not Started",
+      "icon": "circle-large-outline",
+      "strikethrough": false,
+      "countsAsCompleted": false,
+      "nextState": "x"
+    },
+    {
+      "char": "x",
+      "id": "done",
+      "label": "Done",
+      "icon": "pass-filled",
+      "color": "charts.green",
+      "strikethrough": true,
+      "countsAsCompleted": true,
+      "nextState": " "
+    }
+  ]
+}

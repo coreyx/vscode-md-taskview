@@ -1,0 +1,247 @@
+import * as vscode from 'vscode';
+import { BracketRange, HeadingNode, SpecGroup, TaskNode, TaskStats } from '../models/types.js';
+import { StateTemplateEngine } from '../templates/StateTemplateEngine.js';
+
+export class MarkdownASTParser {
+  /**
+   * Parses markdown text into a structured SpecGroup model.
+   *
+   * @param content Full text content of the markdown file.
+   * @param specName Name of the spec folder/group.
+   * @param fileUri URI of the task markdown file.
+   * @param folderUri URI of the parent spec folder.
+   */
+  public static parse(
+    content: string,
+    specName: string,
+    fileUri: vscode.Uri,
+    folderUri: vscode.Uri
+  ): SpecGroup {
+    const lines = content.split(/\r?\n/);
+    const rootTasks: TaskNode[] = [];
+    const headings: HeadingNode[] = [];
+
+    // Heading stack to manage depth hierarchy (levels 1-6)
+    const headingStack: HeadingNode[] = [];
+
+    // Task stack within the current heading to manage indented sub-tasks
+    let taskStack: TaskNode[] = [];
+    let currentHeading: HeadingNode | undefined = undefined;
+
+    // Regular expressions for ATX headings and checklist items
+    const headingRegex = /^(\#{1,6})\s+(.+)$/;
+    const taskRegex = /^(\s*)[-*+]\s+\[(.*?)\]\s*(.*)$/;
+
+    for (let lineIndex = 0; lineIndex < lines.length; lineIndex++) {
+      const lineStr = lines[lineIndex];
+
+      // 1. Check for ATX Heading (# ... ######)
+      const headingMatch = lineStr.match(headingRegex);
+      if (headingMatch) {
+        const level = headingMatch[1].length;
+        const label = headingMatch[2].trim();
+
+        const newHeading: HeadingNode = {
+          type: 'heading',
+          id: `${fileUri.fsPath}#H${lineIndex}_L${level}`,
+          fileUri,
+          label,
+          level,
+          line: lineIndex,
+          children: [],
+          tasks: [],
+          stats: { totalCountable: 0, completedCount: 0, inProgressCount: 0, cancelledCount: 0 },
+        };
+
+        // Reset task stack for the new heading
+        taskStack = [];
+        currentHeading = newHeading;
+
+        // Pop headingStack until we find a parent with a strictly lower level
+        while (headingStack.length > 0 && headingStack[headingStack.length - 1].level >= level) {
+          headingStack.pop();
+        }
+
+        if (headingStack.length === 0) {
+          // Top-level heading within this spec document
+          headings.push(newHeading);
+        } else {
+          // Child heading of the top of the stack
+          headingStack[headingStack.length - 1].children.push(newHeading);
+        }
+
+        headingStack.push(newHeading);
+        continue;
+      }
+
+      // 2. Check for Checklist Item (- [ ] ...)
+      const taskMatch = lineStr.match(taskRegex);
+      if (taskMatch) {
+        const indentStr = taskMatch[1];
+        const indentLevel = this.calculateIndentation(indentStr);
+        const char = taskMatch[2];
+        const cleanText = taskMatch[3].trim();
+
+        // Calculate bracket range columns
+        const openBracketCol = lineStr.indexOf('[');
+        const closeBracketCol = lineStr.indexOf(']', openBracketCol);
+        const bracketRange: BracketRange = {
+          line: lineIndex,
+          openBracketCol,
+          charCol: openBracketCol + 1,
+          closeBracketCol,
+        };
+
+        const stateDef = StateTemplateEngine.getInstance().getState(char);
+        const isCompleted = stateDef.countsAsCompleted ?? (char.toLowerCase() === 'x');
+
+        const taskNode: TaskNode = {
+          type: 'task',
+          id: `${fileUri.fsPath}#T${lineIndex}`,
+          fileUri,
+          rawText: lineStr,
+          cleanText: cleanText || '(Empty task)',
+          char,
+          bracketRange,
+          line: lineIndex,
+          indentation: indentLevel,
+          subTasks: [],
+          isCompleted,
+          parentHeadingId: currentHeading?.id,
+        };
+
+        // Determine hierarchy based on indentation
+        if (taskStack.length === 0) {
+          // First task in current scope
+          this.attachTaskToScope(taskNode, currentHeading, rootTasks);
+          taskStack.push(taskNode);
+        } else {
+          // Find parent task in taskStack with lower indentation
+          while (taskStack.length > 0 && taskStack[taskStack.length - 1].indentation >= indentLevel) {
+            taskStack.pop();
+          }
+
+          if (taskStack.length > 0) {
+            // Indented subtask
+            taskStack[taskStack.length - 1].subTasks.push(taskNode);
+          } else {
+            // Sibling top-level task in current heading scope
+            this.attachTaskToScope(taskNode, currentHeading, rootTasks);
+          }
+
+          taskStack.push(taskNode);
+        }
+      }
+    }
+
+    // Calculate recursive statistics
+    const stats = this.calculateAggregateStats(rootTasks, headings);
+
+    return {
+      type: 'specGroup',
+      id: fileUri.fsPath,
+      name: specName,
+      folderUri,
+      taskFileUri: fileUri,
+      headings,
+      rootTasks,
+      stats,
+    };
+  }
+
+  private static calculateIndentation(indentStr: string): number {
+    let count = 0;
+    for (const ch of indentStr) {
+      if (ch === '\t') {
+        count += 2;
+      } else {
+        count += 1;
+      }
+    }
+    return count;
+  }
+
+  private static attachTaskToScope(
+    task: TaskNode,
+    heading: HeadingNode | undefined,
+    rootTasks: TaskNode[]
+  ): void {
+    if (heading) {
+      heading.tasks.push(task);
+    } else {
+      rootTasks.push(task);
+    }
+  }
+
+  private static calculateAggregateStats(
+    rootTasks: TaskNode[],
+    headings: HeadingNode[]
+  ): TaskStats {
+    const totalStats: TaskStats = {
+      totalCountable: 0,
+      completedCount: 0,
+      inProgressCount: 0,
+      cancelledCount: 0,
+    };
+
+    // Count root tasks
+    const rootTaskStats = this.computeTasksStats(rootTasks);
+    this.addStats(totalStats, rootTaskStats);
+
+    // Count heading trees recursively
+    for (const heading of headings) {
+      const headingStats = this.computeHeadingStats(heading);
+      this.addStats(totalStats, headingStats);
+    }
+
+    return totalStats;
+  }
+
+  private static computeHeadingStats(heading: HeadingNode): TaskStats {
+    const headingStats = this.computeTasksStats(heading.tasks);
+
+    for (const child of heading.children) {
+      const childStats = this.computeHeadingStats(child);
+      this.addStats(headingStats, childStats);
+    }
+
+    heading.stats = { ...headingStats };
+    return headingStats;
+  }
+
+  private static computeTasksStats(tasks: TaskNode[]): TaskStats {
+    const stats: TaskStats = {
+      totalCountable: 0,
+      completedCount: 0,
+      inProgressCount: 0,
+      cancelledCount: 0,
+    };
+
+    const stateEngine = StateTemplateEngine.getInstance();
+    for (const task of tasks) {
+      stats.totalCountable++;
+      const state = stateEngine.getState(task.char);
+      if (state.countsAsCompleted) {
+        stats.completedCount++;
+      } else if (state.id === 'in_progress') {
+        stats.inProgressCount++;
+      } else if (state.id === 'cancelled') {
+        stats.cancelledCount++;
+      }
+
+      if (task.subTasks.length > 0) {
+        const subStats = this.computeTasksStats(task.subTasks);
+        this.addStats(stats, subStats);
+      }
+    }
+
+    return stats;
+  }
+
+  private static addStats(target: TaskStats, source: TaskStats): void {
+    target.totalCountable += source.totalCountable;
+    target.completedCount += source.completedCount;
+    target.inProgressCount += source.inProgressCount;
+    target.cancelledCount += source.cancelledCount;
+  }
+}
