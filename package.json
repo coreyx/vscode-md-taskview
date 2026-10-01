@@ -247,7 +247,8 @@
     "watch": "node esbuild.js --watch",
     "typecheck": "tsc --noEmit",
     "test:unit": "vitest run",
-    "package": "node esbuild.js --production"
+    "package": "node esbuild.js --production",
+    "package:vsix": "vsce package"
   },
   "dependencies": {
     "fast-glob": "^3.3.2",
@@ -256,6 +257,7 @@
   "devDependencies": {
     "@types/node": "^20.11.24",
     "@types/vscode": "^1.88.0",
+    "@vscode/vsce": "^4.0.0",
     "esbuild": "^0.20.2",
     "typescript": "^5.4.2",
     "vitest": "^1.4.0"

@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Comprehensive installation documentation (VSIX, F5 debugging, and local symlinks).
+- Pre-configured `.vscode/launch.json` and `.vscode/tasks.json` for F5 Extension Host debugging.
+- Packaging optimization via `.vscodeignore` reducing VSIX footprint to ~32 KB.
+- Added `npm run package:vsix` script to `package.json`.
+
 ### Changed
 - Removed all external product references from documentation and package keywords.
 

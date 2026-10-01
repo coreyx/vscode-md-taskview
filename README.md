@@ -39,6 +39,57 @@ Designed for modern spec-driven workflows and supercharged with **Obsidian Tasks
 
 ---
 
+## 📦 Installation
+
+### Option 1: Install from VSIX (Recommended for daily use)
+
+You can package and install the extension directly from the repository:
+
+1. **Build and package the `.vsix` file:**
+   ```bash
+   npm install
+   npx @vscode/vsce package
+   ```
+2. **Install into VS Code:**
+   - **Via Terminal / CLI:**
+     ```bash
+     code --install-extension vscode-md-taskview-0.1.0.vsix
+     ```
+   - **Via VS Code Interface:**
+     1. Open the **Extensions View** (`Ctrl+Shift+X` on Windows/Linux, `Cmd+Shift+X` on macOS).
+     2. Click the **`...` (Views and More Actions)** menu icon at the top right of the Extensions panel.
+     3. Select **Install from VSIX...**
+     4. Select the generated `vscode-md-taskview-0.1.0.vsix` file.
+
+### Option 2: Run in Development Mode (F5)
+
+To test or develop the extension live:
+
+1. Clone and open the repository in VS Code:
+   ```bash
+   git clone https://github.com/coreyx/vscode-md-taskview.git
+   cd vscode-md-taskview
+   npm install
+   ```
+2. Press **`F5`** (or go to `Run` → `Start Debugging`).
+3. A new **Extension Development Host** VS Code window will launch with the extension running and ready to test!
+
+### Option 3: Local Symlink Installation
+
+To run your local build directly in your regular VS Code without packaging:
+
+- **Windows (PowerShell as Administrator or with Developer Mode):**
+  ```powershell
+  New-Item -ItemType SymbolicLink -Path "$HOME\.vscode\extensions\coreyx.vscode-md-taskview-0.1.0" -Target (Get-Location)
+  ```
+- **macOS / Linux:**
+  ```bash
+  ln -s "$(pwd)" "$HOME/.vscode/extensions/coreyx.vscode-md-taskview-0.1.0"
+  ```
+- Reload VS Code (`Ctrl+Shift+P` / `Cmd+Shift+P` → `Developer: Reload Window`).
+
+---
+
 ## 🚀 Getting Started
 
 1. Create a `spec` folder in your workspace root, e.g.:
