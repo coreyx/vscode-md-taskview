@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.3] - 2026-10-01
+
+### Added
+- **Markdown Bold & Italic Stripping:** Stripped bold and italic delimiter syntax (`**text**`, `*text*`, `__text__`, `_text_`, `***text***`, `___text___`) from task list items and headings in the tree view so titles like `- [x] **TASK-1.1: Extension Project Scaffolding & Build Tooling**` render cleanly without literal asterisks or underscores. Identifiers with underscores (`snake_case`) and arithmetic asterisks remain intact.
+- **Spec Group H1 Name Resolution:** Added support for `mdTaskView.useH1AsGroupName` to display the cleaned first level-1 heading title as the spec group label.
+
 ## [0.1.2] - 2026-10-01
 
 ### Fixed

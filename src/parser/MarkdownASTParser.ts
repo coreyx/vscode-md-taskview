@@ -39,7 +39,7 @@ export class MarkdownASTParser {
       const headingMatch = lineStr.match(headingRegex);
       if (headingMatch) {
         const level = headingMatch[1].length;
-        const label = headingMatch[2].trim();
+        const label = this.stripMarkdownFormatting(headingMatch[2].trim());
 
         const newHeading: HeadingNode = {
           type: 'heading',
@@ -80,7 +80,7 @@ export class MarkdownASTParser {
         const indentStr = taskMatch[1];
         const indentLevel = this.calculateIndentation(indentStr);
         const char = taskMatch[2];
-        const cleanText = taskMatch[3].trim();
+        const cleanText = this.stripMarkdownFormatting(taskMatch[3].trim());
 
         // Calculate bracket range columns
         const openBracketCol = lineStr.indexOf('[');
@@ -243,5 +243,31 @@ export class MarkdownASTParser {
     target.completedCount += source.completedCount;
     target.inProgressCount += source.inProgressCount;
     target.cancelledCount += source.cancelledCount;
+  }
+
+  /**
+   * Strips bold and italic markdown delimiters from text (e.g. `**text**`, `*text*`, `__text__`, `_text_`).
+   * Preserves identifiers containing underscores (snake_case) and math operators.
+   */
+  public static stripMarkdownFormatting(text: string): string {
+    if (!text) return '';
+
+    let clean = text;
+
+    // 1. Triple delimiters: ***text*** or ___text___ (bold + italic)
+    clean = clean.replace(/\*\*\*([^\*\s](?:.*?[^\*\s])?)\*\*\*/g, '$1');
+    clean = clean.replace(/(?:^|(?<=[\s\p{P}\p{S}]))___([^_\s](?:.*?[^_\s])?)___(?=$|[\s\p{P}\p{S}])/gu, '$1');
+
+    // 2. Double delimiters: **text** or __text__ (bold)
+    clean = clean.replace(/\*\*([^\*\s](?:.*?[^\*\s])?)\*\*/g, '$1');
+    clean = clean.replace(/(?:^|(?<=[\s\p{P}\p{S}]))__([^_\s](?:.*?[^_\s])?)__(?=$|[\s\p{P}\p{S}])/gu, '$1');
+
+    // 3. Single delimiter: *text* (italic with asterisks)
+    clean = clean.replace(/(?<!\*)\*([^\*\s](?:.*?[^\*\s])?)\*(?!\*)/g, '$1');
+
+    // 4. Single delimiter: _text_ (italic with underscores - CommonMark word boundary rules)
+    clean = clean.replace(/(?:^|(?<=[\s\p{P}\p{S}]))_([^_\s](?:.*?[^_\s])?)_(?=$|[\s\p{P}\p{S}])/gu, '$1');
+
+    return clean.trim();
   }
 }

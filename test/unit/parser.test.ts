@@ -114,4 +114,32 @@ Some introductory paragraph text without tasks.
     expect(h1.tasks.length).toBe(1);
     expect(h1.tasks[0].cleanText).toBe('Asterisk bullet task');
   });
+
+  it('should strip markdown bold and italic from task items and headings without literal asterisks or underscores', () => {
+    const markdown = `
+# **Milestone 1**: *Scaffolding*
+- [x] **TASK-1.1: Extension Project Scaffolding & Build Tooling**
+- [ ] *TASK-1.2: Italic task title*
+- [ ] ***TASK-1.3: Bold and italic task title***
+- [x] __TASK-1.4: Underscore bold task__
+- [ ] _TASK-1.5: Underscore italic task_
+- [ ] ___TASK-1.6: Underscore bold and italic task___
+- [ ] **_TASK-1.7: Nested bold italic_**
+- [ ] Combine **bold** with *italic* words in a single line
+- [ ] Maintain snake_case_identifier and math 2 * 3 = 6 intact
+`;
+    const spec = MarkdownASTParser.parse(markdown, 'auth', dummyFileUri, dummyFolderUri);
+    const h1 = spec.headings[0];
+
+    expect(h1.label).toBe('Milestone 1: Scaffolding');
+    expect(h1.tasks[0].cleanText).toBe('TASK-1.1: Extension Project Scaffolding & Build Tooling');
+    expect(h1.tasks[1].cleanText).toBe('TASK-1.2: Italic task title');
+    expect(h1.tasks[2].cleanText).toBe('TASK-1.3: Bold and italic task title');
+    expect(h1.tasks[3].cleanText).toBe('TASK-1.4: Underscore bold task');
+    expect(h1.tasks[4].cleanText).toBe('TASK-1.5: Underscore italic task');
+    expect(h1.tasks[5].cleanText).toBe('TASK-1.6: Underscore bold and italic task');
+    expect(h1.tasks[6].cleanText).toBe('TASK-1.7: Nested bold italic');
+    expect(h1.tasks[7].cleanText).toBe('Combine bold with italic words in a single line');
+    expect(h1.tasks[8].cleanText).toBe('Maintain snake_case_identifier and math 2 * 3 = 6 intact');
+  });
 });

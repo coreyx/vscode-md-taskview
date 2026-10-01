@@ -1,37 +1,38 @@
-# Release Notes - v0.1.2
+# Release Notes - v0.1.3
 
 ## VS Code Markdown Task View (`vscode-md-taskview`)
 
-Release **v0.1.2** resolves a critical production bundling issue that prevented the extension from activating and caused command registration failures.
+Release **v0.1.3** strips literal Markdown formatting (bold and italic) from task titles and headings, ensuring clean visual presentation in the TreeView.
 
 ---
 
-## 🛠️ Fixes & Improvements
+## 🛠️ Enhancements & Improvements
 
-### 1. Esbuild Module Bundling Fix for `jsonc-parser`
-- **Issue:** When bundling for production with `esbuild`, `jsonc-parser` was being loaded via its UMD entry point (`lib/umd/main.js`). This entry point wrapped its definition inside an IIFE that shadowed Node's `require`, causing internal dependency `require('./impl/format')` to remain dynamic and fail at runtime with `Cannot find module './impl/format'`.
-- **Impact:** Extension activation threw an unhandled error upon launching VS Code, resulting in:
-  - Sidebar TreeView failing to initialize (staying stuck on the empty welcome view).
-  - Commands not registering (`command 'mdTaskView.refresh' not found`, `command 'mdTaskView.toggleFilterCompleted' not found`).
-  - Welcome view actions ("Create Sample Spec", "Open Settings") failing to execute.
-- **Fix:** Configured `mainFields: ['module', 'main']` in `esbuild.js` to ensure `esbuild` selects the ESM distribution of dependencies (`jsonc-parser/lib/esm/main.js`), enabling complete inline bundle resolution with zero external relative runtime requires.
+### 1. Markdown Bold & Italic Delimiter Removal in TreeView
+- **Issue:** When specification checklist items or headings use Markdown bold (`**bold**`, `__bold__`) or italic (`*italic*`, `_italic_`), VS Code TreeItems rendered the asterisks and underscores literally as plain text (e.g. `**TASK-1.1: Extension Project Scaffolding & Build Tooling**`). Additionally, when strikethrough styling was enabled for completed items, the combining strike characters were applied across the asterisks (`*̶*̶T̶A̶S̶K̶...`).
+- **Fix:** Implemented delimiter-stripping in `MarkdownASTParser`:
+  - Strips `**...**` and `__...__` (bold).
+  - Strips `*...*` and `_..._` (italic).
+  - Strips `***...***` and `___...___` (bold + italic) and nested variations.
+  - Follows CommonMark word boundary rules to preserve `snake_case` variable names and arithmetic asterisks (`2 * 3 = 6`).
+  - Applied to task clean text, heading labels, and spec group titles.
 
-### 2. Extension Activation & Command Registration Verified
-- Validated end-to-end activation and tree provider initialization with all 13 extension commands properly bound to the command registry on startup.
+### 2. Group Name Resolution
+- Added support for `mdTaskView.useH1AsGroupName` to display the first level-1 heading title (with markdown formatting stripped) as the spec group label when enabled.
 
 ---
 
 ## 📦 Installation
 
-Download the attached `vscode-md-taskview-0.1.2.vsix` asset below and install it into VS Code:
+Download the attached `vscode-md-taskview-0.1.3.vsix` asset below and install it into VS Code:
 
 ### Option A: Via Command Line
 ```bash
-code --install-extension vscode-md-taskview-0.1.2.vsix
+code --install-extension vscode-md-taskview-0.1.3.vsix
 ```
 
 ### Option B: Via VS Code Interface
 1. Open the **Extensions View** in VS Code (`Ctrl+Shift+X` / `Cmd+Shift+X`).
 2. Click the **`...` (Views and More Actions)** menu icon at the top-right corner.
 3. Select **Install from VSIX...**
-4. Select the downloaded `vscode-md-taskview-0.1.2.vsix` file.
+4. Select the downloaded `vscode-md-taskview-0.1.3.vsix` file.

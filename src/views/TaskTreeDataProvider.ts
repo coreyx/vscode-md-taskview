@@ -75,8 +75,16 @@ export class TaskTreeDataProvider implements vscode.TreeDataProvider<TaskTreeNod
 
     switch (element.type) {
       case 'specGroup': {
+        let groupTitle = element.name;
+        if (config.useH1AsGroupName && element.headings.length > 0) {
+          const firstH1 = element.headings.find((h) => h.level === 1);
+          if (firstH1) {
+            groupTitle = firstH1.label;
+          }
+        }
+
         const item = new vscode.TreeItem(
-          element.name,
+          groupTitle,
           vscode.TreeItemCollapsibleState.Expanded
         );
         item.id = element.id;
