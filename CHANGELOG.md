@@ -7,15 +7,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Added
-- Comprehensive installation documentation (VSIX, F5 debugging, and local symlinks).
-- Pre-configured `.vscode/launch.json` and `.vscode/tasks.json` for F5 Extension Host debugging.
-- Packaging optimization via `.vscodeignore` reducing VSIX footprint to ~32 KB.
-- Added `npm run package:vsix` script to `package.json`.
-
-### Changed
-- Removed all external product references from documentation and package keywords.
-
 ## [0.1.0] - 2026-10-01
 
 ### Added
@@ -34,6 +25,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - View controls: "Filter Completed Tasks" toggle, "Collapse All", and manual "Refresh".
 - Empty workspace welcome guidance with "Create Sample Spec" generator.
 - Multi-root workspace support with folder name prefixing for distinct spec groups.
+- Comprehensive installation options (VSIX, F5 debugging, and local symlinks).
+- Pre-configured `.vscode/launch.json` and `.vscode/tasks.json` for F5 Extension Host debugging.
+- Packaging optimization via `.vscodeignore` reducing VSIX footprint to ~32 KB.
 - Comprehensive unit test suite using Vitest for AST parsing, multi-state transitions, and bracket mutation range calculations.
 - Complete specification suite under `spec/vscode-md-taskview/` (`product.md`, `milestones.md`, `requirements.md`, `tech.md`, `design.md`, `tasks.md`).
 - MIT License and project README.
