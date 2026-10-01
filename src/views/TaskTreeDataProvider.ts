@@ -15,7 +15,8 @@ export class TaskTreeDataProvider implements vscode.TreeDataProvider<TaskTreeNod
 
   constructor(
     private discoveryService: SpecDiscoveryService = new SpecDiscoveryService(),
-    private configManager: ConfigurationManager = ConfigurationManager.getInstance()
+    private configManager: ConfigurationManager = ConfigurationManager.getInstance(),
+    private context?: vscode.ExtensionContext
   ) {}
 
   public async refresh(targetNode?: TaskTreeNode): Promise<void> {
@@ -107,11 +108,33 @@ export class TaskTreeDataProvider implements vscode.TreeDataProvider<TaskTreeNod
         );
         item.id = element.id;
         item.contextValue = 'heading';
-        item.iconPath = new vscode.ThemeIcon('bookmark');
+
+        const isComplete =
+          element.stats.totalCountable > 0 &&
+          element.stats.completedCount === element.stats.totalCountable;
+
+        if (isComplete) {
+          if (this.context) {
+            item.iconPath = {
+              light: vscode.Uri.joinPath(this.context.extensionUri, 'resources', 'icons', 'light', 'bookmark-filled.svg'),
+              dark: vscode.Uri.joinPath(this.context.extensionUri, 'resources', 'icons', 'dark', 'bookmark-filled.svg'),
+            };
+          } else {
+            item.iconPath = new vscode.ThemeIcon('bookmark', new vscode.ThemeColor('charts.green'));
+          }
+        } else {
+          item.iconPath = new vscode.ThemeIcon('bookmark');
+        }
 
         if (config.showProgressCount && element.stats.totalCountable > 0) {
           item.description = `(${element.stats.completedCount}/${element.stats.totalCountable})`;
         }
+
+        item.tooltip = isComplete
+          ? `${element.label} (Complete: ${element.stats.completedCount}/${element.stats.totalCountable})`
+          : element.stats.totalCountable > 0
+          ? `${element.label} (${element.stats.completedCount}/${element.stats.totalCountable} completed)`
+          : element.label;
 
         // Navigation command
         item.command = {

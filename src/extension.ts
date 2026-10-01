@@ -18,7 +18,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
   // 2. Initialize Services & TreeDataProvider
   const discoveryService = new SpecDiscoveryService(configManager);
-  const treeDataProvider = new TaskTreeDataProvider(discoveryService, configManager);
+  const treeDataProvider = new TaskTreeDataProvider(discoveryService, configManager, context);
 
   // 3. Register TreeView
   const treeView = vscode.window.createTreeView('mdTaskView.tasksView', {

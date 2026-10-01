@@ -11,6 +11,15 @@ export const Uri = {
     scheme: 'file',
     toString: () => uriStr,
   }),
+  joinPath: (base: any, ...pathSegments: string[]) => {
+    const joined = [base.fsPath || base.path, ...pathSegments].join('/').replace(/\/+/g, '/');
+    return {
+      fsPath: joined,
+      path: joined,
+      scheme: base.scheme || 'file',
+      toString: () => `${base.scheme || 'file'}://${joined}`,
+    };
+  },
 };
 
 export class EventEmitter<T = any> {
