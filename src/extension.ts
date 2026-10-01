@@ -23,8 +23,10 @@ export async function activate(context: vscode.ExtensionContext) {
   // 3. Register TreeView
   const treeView = vscode.window.createTreeView('mdTaskView.tasksView', {
     treeDataProvider,
-    showCollapseAll: true,
   });
+
+  // Initialize context for collapse/expand toggle
+  await vscode.commands.executeCommand('setContext', 'mdTaskView.isCollapsed', false);
 
   // 4. Start Live Filesystem & Buffer Watcher
   const watcherService = new FileSystemWatcherService(treeDataProvider, configManager);
@@ -34,6 +36,18 @@ export async function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     treeView,
     watcherService,
+    vscode.commands.registerCommand('mdTaskView.collapseAll', async () => {
+      treeDataProvider.collapseAll();
+      await vscode.commands.executeCommand('setContext', 'mdTaskView.isCollapsed', true);
+    }),
+    vscode.commands.registerCommand('mdTaskView.expandAll', async () => {
+      treeDataProvider.expandAll();
+      await vscode.commands.executeCommand('setContext', 'mdTaskView.isCollapsed', false);
+    }),
+    vscode.commands.registerCommand('mdTaskView.toggleExpandCollapse', async () => {
+      const isCollapsed = treeDataProvider.toggleExpandCollapse();
+      await vscode.commands.executeCommand('setContext', 'mdTaskView.isCollapsed', isCollapsed);
+    }),
     vscode.commands.registerCommand('mdTaskView.refresh', async () => {
       await treeDataProvider.reloadSpecs();
       vscode.window.showInformationMessage('Markdown Tasks: Refreshed.');

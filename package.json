@@ -2,7 +2,7 @@
   "name": "vscode-md-taskview",
   "displayName": "Markdown Tasks View",
   "description": "Visual, hierarchical tree view for Markdown specification task lists (GFM & Obsidian Tasks)",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "publisher": "coreyx",
   "author": "Corey Struzan",
   "license": "MIT",
@@ -32,6 +32,8 @@
     "onCommand:mdTaskView.createSampleSpec",
     "onCommand:mdTaskView.openSettings",
     "onCommand:mdTaskView.refresh",
+    "onCommand:mdTaskView.collapseAll",
+    "onCommand:mdTaskView.expandAll",
     "onStartupFinished"
   ],
   "contributes": {
@@ -79,8 +81,19 @@
         "title": "Create Sample Spec"
       },
       {
+        "command": "mdTaskView.collapseAll",
+        "title": "Collapse All",
+        "icon": "$(collapse-all)"
+      },
+      {
+        "command": "mdTaskView.expandAll",
+        "title": "Expand All",
+        "icon": "$(expand-all)"
+      },
+      {
         "command": "mdTaskView.openSettings",
-        "title": "Open Markdown Tasks Settings"
+        "title": "Open Markdown Tasks Settings",
+        "icon": "$(gear)"
       },
       {
         "command": "mdTaskView.setStateNotStarted",
@@ -130,6 +143,21 @@
           "command": "mdTaskView.refresh",
           "when": "view == mdTaskView.tasksView",
           "group": "navigation@2"
+        },
+        {
+          "command": "mdTaskView.collapseAll",
+          "when": "view == mdTaskView.tasksView && !mdTaskView.isCollapsed",
+          "group": "navigation@3"
+        },
+        {
+          "command": "mdTaskView.expandAll",
+          "when": "view == mdTaskView.tasksView && mdTaskView.isCollapsed",
+          "group": "navigation@3"
+        },
+        {
+          "command": "mdTaskView.openSettings",
+          "when": "view == mdTaskView.tasksView",
+          "group": "navigation@4"
         }
       ],
       "view/item/context": [

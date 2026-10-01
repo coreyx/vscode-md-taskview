@@ -12,6 +12,8 @@ export class TaskTreeDataProvider implements vscode.TreeDataProvider<TaskTreeNod
 
   private specGroups: Map<string, SpecGroup> = new Map();
   private isFilterCompletedActive = false;
+  private isAllCollapsed = false;
+  private expandCollapseVersion = 0;
 
   constructor(
     private discoveryService: SpecDiscoveryService = new SpecDiscoveryService(),
@@ -71,6 +73,31 @@ export class TaskTreeDataProvider implements vscode.TreeDataProvider<TaskTreeNod
     return this.isFilterCompletedActive;
   }
 
+  public collapseAll(): void {
+    this.isAllCollapsed = true;
+    this.expandCollapseVersion++;
+    this._onDidChangeTreeData.fire();
+  }
+
+  public expandAll(): void {
+    this.isAllCollapsed = false;
+    this.expandCollapseVersion++;
+    this._onDidChangeTreeData.fire();
+  }
+
+  public toggleExpandCollapse(): boolean {
+    if (this.isAllCollapsed) {
+      this.expandAll();
+    } else {
+      this.collapseAll();
+    }
+    return this.isAllCollapsed;
+  }
+
+  public getIsAllCollapsed(): boolean {
+    return this.isAllCollapsed;
+  }
+
   public getTreeItem(element: TaskTreeNode): vscode.TreeItem {
     const config = this.configManager.getConfig();
 
@@ -84,11 +111,12 @@ export class TaskTreeDataProvider implements vscode.TreeDataProvider<TaskTreeNod
           }
         }
 
-        const item = new vscode.TreeItem(
-          groupTitle,
-          vscode.TreeItemCollapsibleState.Expanded
-        );
-        item.id = element.id;
+        const collapsibleState = this.isAllCollapsed
+          ? vscode.TreeItemCollapsibleState.Collapsed
+          : vscode.TreeItemCollapsibleState.Expanded;
+
+        const item = new vscode.TreeItem(groupTitle, collapsibleState);
+        item.id = `${element.id}#v${this.expandCollapseVersion}`;
         item.contextValue = 'specGroup';
         item.iconPath = new vscode.ThemeIcon('package');
 
@@ -102,11 +130,12 @@ export class TaskTreeDataProvider implements vscode.TreeDataProvider<TaskTreeNod
       }
 
       case 'heading': {
-        const item = new vscode.TreeItem(
-          element.label,
-          vscode.TreeItemCollapsibleState.Expanded
-        );
-        item.id = element.id;
+        const collapsibleState = this.isAllCollapsed
+          ? vscode.TreeItemCollapsibleState.Collapsed
+          : vscode.TreeItemCollapsibleState.Expanded;
+
+        const item = new vscode.TreeItem(element.label, collapsibleState);
+        item.id = `${element.id}#v${this.expandCollapseVersion}`;
         item.contextValue = 'heading';
 
         const isComplete =
@@ -147,9 +176,12 @@ export class TaskTreeDataProvider implements vscode.TreeDataProvider<TaskTreeNod
 
       case 'task': {
         const hasSubtasks = element.subTasks.length > 0;
-        const collapsibleState = hasSubtasks
-          ? vscode.TreeItemCollapsibleState.Expanded
-          : vscode.TreeItemCollapsibleState.None;
+        let collapsibleState = vscode.TreeItemCollapsibleState.None;
+        if (hasSubtasks) {
+          collapsibleState = this.isAllCollapsed
+            ? vscode.TreeItemCollapsibleState.Collapsed
+            : vscode.TreeItemCollapsibleState.Expanded;
+        }
 
         const stateEngine = StateTemplateEngine.getInstance();
         const stateDef = stateEngine.getState(element.char);
@@ -161,7 +193,7 @@ export class TaskTreeDataProvider implements vscode.TreeDataProvider<TaskTreeNod
         }
 
         const item = new vscode.TreeItem(displayLabel, collapsibleState);
-        item.id = element.id;
+        item.id = `${element.id}#v${this.expandCollapseVersion}`;
         item.contextValue = 'taskItem';
 
         // Set Icon & Color based on state definition

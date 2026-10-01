@@ -83,6 +83,18 @@ export class ThemeColor {
   constructor(public id: string) {}
 }
 
+export class MarkdownString {
+  constructor(public value: string = '', public isTrusted: boolean = false) {}
+  appendMarkdown(value: string): MarkdownString {
+    this.value += value;
+    return this;
+  }
+  appendText(value: string): MarkdownString {
+    this.value += value;
+    return this;
+  }
+}
+
 export class TreeItem {
   constructor(public label: string, public collapsibleState?: number) {}
 }
