@@ -12,6 +12,7 @@ const buildOptions = {
   format: 'cjs',
   platform: 'node',
   target: 'node20',
+  mainFields: ['module', 'main'],
   sourcemap: !isProduction,
   minify: isProduction,
   logLevel: 'info',

@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.2] - 2026-10-01
+
+### Fixed
+- **Esbuild Bundle Resolution for `jsonc-parser`:** Added `mainFields: ['module', 'main']` to esbuild configuration to resolve `jsonc-parser`'s ESM entry point rather than its UMD wrapper, eliminating runtime `Cannot find module './impl/format'` errors during extension activation.
+- **Extension Command Registration:** Restored full command registration and TreeView initialization on startup, resolving `command 'mdTaskView.refresh' not found` and `command 'mdTaskView.toggleFilterCompleted' not found`.
+
 ## [0.1.1] - 2026-10-01
 
 ### Fixed
