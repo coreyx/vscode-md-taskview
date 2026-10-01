@@ -37,9 +37,10 @@ export class FileSystemWatcherService implements vscode.Disposable {
       return;
     }
 
-    const specPattern = config.specPathPattern.replace(/^\.\//, '').replace(/\/$/, '');
     const taskFileName = config.taskFileName;
-    const globPattern = `**/${specPattern}/${taskFileName}`;
+    const rawSpecPattern = config.specPathPattern.replace(/^\.\//, '').replace(/\/+$/, '');
+    const baseDir = rawSpecPattern.replace(/\/\*+$/, '');
+    const globPattern = `**/${baseDir}/**/${taskFileName}`;
 
     this.watcher = vscode.workspace.createFileSystemWatcher(globPattern);
 

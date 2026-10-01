@@ -72,6 +72,9 @@ export async function activate(context: vscode.ExtensionContext) {
     vscode.commands.registerCommand('mdTaskView.createSampleSpec', async () => {
       await StateCommands.createSampleSpec();
       await treeDataProvider.reloadSpecs();
+    }),
+    vscode.commands.registerCommand('mdTaskView.openSettings', async () => {
+      await vscode.commands.executeCommand('workbench.action.openSettings', 'mdTaskView');
     })
   );
 

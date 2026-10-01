@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.1] - 2026-10-01
+
+### Fixed
+- **View Activation Lifecycle:** Added `onView:mdTaskView.tasksView` and command triggers to `activationEvents` so the extension activates immediately upon opening the sidebar view or clicking welcome view actions.
+- **Spec Discovery:** Switched to direct `fast-glob` scanning with VS Code `findFiles` fallback, reliably discovering nested spec directories (`spec/vscode-md-taskview/tasks.md`), direct spec files (`spec/tasks.md`), and deep hierarchies (`spec/**/tasks.md`).
+- **Create Sample Spec Action:** Fixed welcome view button execution to ensure `mdTaskView.createSampleSpec` activates and generates `./spec/sample/tasks.md`.
+- **Open Settings Action:** Implemented dedicated `mdTaskView.openSettings` command so clicking "Open Settings" in the welcome view navigates directly to the filtered `mdTaskView` configuration settings.
+- **Filesystem Watcher:** Broadened watcher pattern to monitor all task files across the spec directory hierarchy.
+
 ## [0.1.0] - 2026-10-01
 
 ### Added

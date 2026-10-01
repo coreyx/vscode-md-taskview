@@ -2,7 +2,7 @@
   "name": "vscode-md-taskview",
   "displayName": "Markdown Tasks View",
   "description": "Visual, hierarchical tree view for Markdown specification task lists (GFM & Obsidian Tasks)",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "publisher": "coreyx",
   "author": "Corey Struzan",
   "license": "MIT",
@@ -28,6 +28,10 @@
   ],
   "main": "./dist/extension.js",
   "activationEvents": [
+    "onView:mdTaskView.tasksView",
+    "onCommand:mdTaskView.createSampleSpec",
+    "onCommand:mdTaskView.openSettings",
+    "onCommand:mdTaskView.refresh",
     "onStartupFinished"
   ],
   "contributes": {
@@ -51,7 +55,7 @@
     "viewsWelcome": [
       {
         "view": "mdTaskView.tasksView",
-        "contents": "No specification task files found matching `spec/*/tasks.md`.\n[Create Sample Spec](command:mdTaskView.createSampleSpec)\n[Open Settings](command:workbench.action.openSettings?mdTaskView)"
+        "contents": "No specification task files found matching `spec/**/tasks.md`.\n[Create Sample Spec](command:mdTaskView.createSampleSpec)\n[Open Settings](command:mdTaskView.openSettings)"
       }
     ],
     "commands": [
@@ -73,6 +77,10 @@
       {
         "command": "mdTaskView.createSampleSpec",
         "title": "Create Sample Spec"
+      },
+      {
+        "command": "mdTaskView.openSettings",
+        "title": "Open Markdown Tasks Settings"
       },
       {
         "command": "mdTaskView.setStateNotStarted",
