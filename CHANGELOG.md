@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.5] - 2026-10-01
+
+### Added
+- **Respect Default Editor & Markdown Preview (`workbench.editorAssociations`):** When clicking tasks or milestone headings in the tree view, the extension now inspects `workbench.editorAssociations` for `*.md` settings (such as `"vscode.markdown.preview.editor"`). If Markdown Preview is set as the default editor, files open directly in the preview at the target line (`#L{line}`) rather than forcing the text editor.
+- **Configurable `mdTaskView.openEditor` Setting:** Added configuration option with values `'auto'` (default, automatically respects `workbench.editorAssociations`), `'textEditor'` (always opens in text editor and centers line), and `'preview'` (always opens in Markdown Preview).
+
 ## [0.1.4] - 2026-10-01
 
 ### Added

@@ -2,7 +2,7 @@
   "name": "vscode-md-taskview",
   "displayName": "Markdown Tasks View",
   "description": "Visual, hierarchical tree view for Markdown specification task lists (GFM & Obsidian Tasks)",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "publisher": "coreyx",
   "author": "Corey Struzan",
   "license": "MIT",
@@ -245,6 +245,21 @@
           "type": "boolean",
           "default": false,
           "description": "Use the first level-1 heading in tasks.md as the group title instead of the folder name."
+        },
+        "mdTaskView.openEditor": {
+          "type": "string",
+          "enum": [
+            "auto",
+            "textEditor",
+            "preview"
+          ],
+          "enumDescriptions": [
+            "Automatically respect VS Code default editor (opens in Markdown Preview if workbench.editorAssociations is configured for *.md, otherwise text editor).",
+            "Always open in the standard text editor at the target line.",
+            "Always open in Markdown Preview."
+          ],
+          "default": "auto",
+          "description": "How to open specification markdown files when clicking a task or milestone in the tree view."
         }
       }
     }

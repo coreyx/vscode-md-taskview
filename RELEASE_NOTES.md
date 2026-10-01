@@ -1,37 +1,38 @@
-# Release Notes - v0.1.4
+# Release Notes - v0.1.5
 
 ## VS Code Markdown Task View (`vscode-md-taskview`)
 
-Release **v0.1.4** adds visual milestone completion indicators with a custom bundled filled bookmark icon rendered in green.
+Release **v0.1.5** respects VS Code default editor associations (`workbench.editorAssociations`) when clicking tasks and milestones, opening in Markdown Preview when configured.
 
 ---
 
 ## 🛠️ Enhancements & Improvements
 
-### 1. Milestone Completion Visual Indicator (Filled Bookmark SVG)
-- **Feature:** Headings and milestones in the TreeView now visually reflect their completion state:
-  - **Incomplete / In Progress:** Displays the standard outline bookmark icon (`bookmark`).
-  - **Complete:** Automatically switches to a custom solid filled bookmark icon rendered in theme-aware vibrant green (`#73c991` for dark themes, `#2da44e` for light themes) when all countable tasks under that heading or milestone are completed (`completedCount === totalCountable`).
-- **Assets:** Bundled dark and light themed SVG icons under `resources/icons/` ensuring pixel-perfect contrast across all themes and high-contrast modes.
+### 1. Respect `workbench.editorAssociations` for `*.md`
+- **Issue:** Previously, clicking on any task or heading always invoked `vscode.window.showTextDocument`, which forced files to open in the raw text editor even if the user configured `"workbench.editorAssociations": { "*.md": "vscode.markdown.preview.editor" }`.
+- **Fix:** `NavigationCommands.jumpToSource` now detects `workbench.editorAssociations`:
+  - When `*.md` is associated with Markdown Preview or another custom editor, the file opens directly in that preview editor at the target line (`#L{lineNumber}`).
+  - When no custom association is configured, the file opens in the standard text editor with the line highlighted and centered.
 
-### 2. Enhanced Milestone Tooltips
-- Tooltips for heading items now display dynamic status summaries:
-  - Complete state: `[Milestone Name] (Complete: X/X)`
-  - In-progress state: `[Milestone Name] (X/Y completed)`
+### 2. Configurable `mdTaskView.openEditor` Setting
+- Added a dedicated setting to control opening behavior:
+  - `"auto"` (Default): Automatically respects `workbench.editorAssociations` (opens in Markdown Preview if configured, otherwise text editor).
+  - `"textEditor"`: Always opens in the standard text editor and centers the target line, even if `workbench.editorAssociations` is set to preview.
+  - `"preview"`: Always opens in Markdown Preview regardless of global editor associations.
 
 ---
 
 ## 📦 Installation
 
-Download the attached `vscode-md-taskview-0.1.4.vsix` asset below and install it into VS Code:
+Download the attached `vscode-md-taskview-0.1.5.vsix` asset below and install it into VS Code:
 
 ### Option A: Via Command Line
 ```bash
-code --install-extension vscode-md-taskview-0.1.4.vsix
+code --install-extension vscode-md-taskview-0.1.5.vsix
 ```
 
 ### Option B: Via VS Code Interface
 1. Open the **Extensions View** in VS Code (`Ctrl+Shift+X` / `Cmd+Shift+X`).
 2. Click the **`...` (Views and More Actions)** menu icon at the top-right corner.
 3. Select **Install from VSIX...**
-4. Select the downloaded `vscode-md-taskview-0.1.4.vsix` file.
+4. Select the downloaded `vscode-md-taskview-0.1.5.vsix` file.

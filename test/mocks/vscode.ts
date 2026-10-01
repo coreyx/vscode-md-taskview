@@ -3,12 +3,32 @@ export const Uri = {
     fsPath,
     path: fsPath,
     scheme: 'file',
+    fragment: '',
+    with: function(change: any) {
+      return {
+        fsPath: change.path || this.fsPath,
+        path: change.path || this.path,
+        scheme: change.scheme || this.scheme,
+        fragment: change.fragment !== undefined ? change.fragment : this.fragment,
+        toString: () => `file://${change.path || this.path}${change.fragment ? '#' + change.fragment : ''}`,
+      };
+    },
     toString: () => `file://${fsPath}`,
   }),
   parse: (uriStr: string) => ({
-    fsPath: uriStr.replace('file://', ''),
-    path: uriStr.replace('file://', ''),
+    fsPath: uriStr.replace('file://', '').split('#')[0],
+    path: uriStr.replace('file://', '').split('#')[0],
     scheme: 'file',
+    fragment: uriStr.includes('#') ? uriStr.split('#')[1] : '',
+    with: function(change: any) {
+      return {
+        fsPath: change.path || this.fsPath,
+        path: change.path || this.path,
+        scheme: change.scheme || this.scheme,
+        fragment: change.fragment !== undefined ? change.fragment : this.fragment,
+        toString: () => `file://${change.path || this.path}${change.fragment ? '#' + change.fragment : ''}`,
+      };
+    },
     toString: () => uriStr,
   }),
   joinPath: (base: any, ...pathSegments: string[]) => {
@@ -17,6 +37,16 @@ export const Uri = {
       fsPath: joined,
       path: joined,
       scheme: base.scheme || 'file',
+      fragment: '',
+      with: function(change: any) {
+        return {
+          fsPath: change.path || this.fsPath,
+          path: change.path || this.path,
+          scheme: change.scheme || this.scheme,
+          fragment: change.fragment !== undefined ? change.fragment : this.fragment,
+          toString: () => `${this.scheme}://${change.path || this.path}${change.fragment ? '#' + change.fragment : ''}`,
+        };
+      },
       toString: () => `${base.scheme || 'file'}://${joined}`,
     };
   },
@@ -63,8 +93,72 @@ export enum TreeItemCollapsibleState {
   Expanded = 2,
 }
 
+export class Position {
+  constructor(public line: number, public character: number) {}
+}
+
+export class Range {
+  constructor(public start: Position, public end: Position) {}
+}
+
+export class Selection {
+  constructor(public start: Position, public end: Position) {}
+}
+
+export enum TextEditorRevealType {
+  InCenter = 2,
+}
+
+let mockConfigurations: Record<string, any> = {};
+
+export function setMockConfiguration(section: string, values: any) {
+  mockConfigurations[section] = values;
+}
+
+export function resetMockConfigurations() {
+  mockConfigurations = {};
+}
+
 export const workspace = {
-  getConfiguration: (_section?: string) => ({
-    get: (key: string, defaultValue?: any) => defaultValue,
+  getConfiguration: (section?: string) => ({
+    get: (key: string, defaultValue?: any) => {
+      if (section && mockConfigurations[section] && mockConfigurations[section][key] !== undefined) {
+        return mockConfigurations[section][key];
+      }
+      return defaultValue;
+    },
   }),
+  openTextDocument: async (uri: any) => ({
+    uri,
+    lineAt: (line: number) => ({ text: `Line content at ${line}` }),
+  }),
+};
+
+export let executedCommands: { command: string; args: any[] }[] = [];
+
+export function resetExecutedCommands() {
+  executedCommands = [];
+}
+
+export const commands = {
+  executeCommand: async (command: string, ...args: any[]) => {
+    executedCommands.push({ command, args });
+    return undefined;
+  },
+};
+
+export let lastShownTextDocument: { doc: any; options?: any } | undefined;
+export let lastShownErrorMessage: string | undefined;
+
+export const window = {
+  showTextDocument: async (doc: any, options?: any) => {
+    lastShownTextDocument = { doc, options };
+    return {
+      revealRange: () => {},
+      selection: undefined,
+    };
+  },
+  showErrorMessage: (msg: string) => {
+    lastShownErrorMessage = msg;
+  },
 };
