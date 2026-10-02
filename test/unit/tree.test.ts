@@ -295,5 +295,62 @@ describe('TaskTreeDataProvider Expand / Collapse All Toggle', () => {
     expect(provider.getParent(parentTask)?.id).toBe(heading.id);
     expect(provider.getParent(simpleTask)?.id).toBe(parentTask.id);
   });
+
+  it('keeps container expanded and collapses contained milestones when collapseContained() is called', () => {
+    const provider = new TaskTreeDataProvider();
+    const { specGroup, heading, parentTask } = createSampleNodes();
+    const heading2: HeadingNode = {
+      type: 'heading',
+      id: 'h2',
+      fileUri: dummyFileUri,
+      label: 'Milestone 2',
+      level: 2,
+      line: 20,
+      children: [],
+      tasks: [],
+      stats: { totalCountable: 0, completedCount: 0, inProgressCount: 0, cancelledCount: 0 },
+    };
+    heading.tasks = [parentTask];
+    specGroup.headings = [heading, heading2];
+    provider.addSpecGroup(specGroup);
+
+    expect(provider.hasCollapsibleChildren(specGroup)).toBe(true);
+    expect(provider.areContainedChildrenCollapsed(specGroup)).toBe(false);
+
+    // Collapse level contained within specGroup
+    provider.collapseContained(specGroup);
+
+    // Spec group remains expanded so milestones are visible
+    const specItem = provider.getTreeItem(specGroup);
+    expect(specItem.collapsibleState).toBe(vscode.TreeItemCollapsibleState.Expanded);
+
+    // Milestones contained within it are collapsed so their tasks are hidden
+    const h1Item = provider.getTreeItem(heading);
+    expect(h1Item.collapsibleState).toBe(vscode.TreeItemCollapsibleState.Collapsed);
+
+    const h2Item = provider.getTreeItem(heading2);
+    expect(h2Item.collapsibleState).toBe(vscode.TreeItemCollapsibleState.Collapsed);
+
+    expect(provider.areContainedChildrenCollapsed(specGroup)).toBe(true);
+  });
+
+  it('expands contained milestones when expandContained() is called on container', () => {
+    const provider = new TaskTreeDataProvider();
+    const { specGroup, heading } = createSampleNodes();
+    specGroup.headings = [heading];
+    provider.addSpecGroup(specGroup);
+
+    provider.collapseContained(specGroup);
+    expect(provider.areContainedChildrenCollapsed(specGroup)).toBe(true);
+
+    provider.expandContained(specGroup);
+    expect(provider.areContainedChildrenCollapsed(specGroup)).toBe(false);
+
+    const specItem = provider.getTreeItem(specGroup);
+    expect(specItem.collapsibleState).toBe(vscode.TreeItemCollapsibleState.Expanded);
+
+    const h1Item = provider.getTreeItem(heading);
+    expect(h1Item.collapsibleState).toBe(vscode.TreeItemCollapsibleState.Expanded);
+  });
 });
 

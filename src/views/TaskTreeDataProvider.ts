@@ -136,6 +136,122 @@ export class TaskTreeDataProvider implements vscode.TreeDataProvider<TaskTreeNod
     }
   }
 
+  public getContainedCollapsibleIds(node: TaskTreeNode): string[] {
+    const ids: string[] = [];
+    switch (node.type) {
+      case 'specGroup':
+        for (const h of node.headings) {
+          ids.push(h.id);
+          ids.push(...this.collectSubtreeIds(h));
+        }
+        for (const t of node.rootTasks) {
+          if (t.subTasks.length > 0) {
+            ids.push(t.id);
+            ids.push(...this.collectSubtreeIds(t));
+          }
+        }
+        break;
+      case 'heading':
+        for (const ch of node.children) {
+          ids.push(ch.id);
+          ids.push(...this.collectSubtreeIds(ch));
+        }
+        for (const t of node.tasks) {
+          if (t.subTasks.length > 0) {
+            ids.push(t.id);
+            ids.push(...this.collectSubtreeIds(t));
+          }
+        }
+        break;
+      case 'task':
+        for (const st of node.subTasks) {
+          if (st.subTasks.length > 0) {
+            ids.push(st.id);
+            ids.push(...this.collectSubtreeIds(st));
+          }
+        }
+        break;
+    }
+    return Array.from(new Set(ids));
+  }
+
+  public hasCollapsibleChildren(node: TaskTreeNode): boolean {
+    return this.getContainedCollapsibleIds(node).length > 0;
+  }
+
+  public isNodeIdCollapsed(id: string): boolean {
+    const state = this.nodeStates.get(id);
+    if (state !== undefined) {
+      return state.isCollapsed;
+    }
+    return this.defaultIsCollapsed;
+  }
+
+  public areContainedChildrenCollapsed(node: TaskTreeNode): boolean {
+    if (!this.hasCollapsibleChildren(node)) {
+      return this.isNodeCollapsed(node);
+    }
+    const containedIds = this.getContainedCollapsibleIds(node);
+    return containedIds.every((id) => this.isNodeIdCollapsed(id));
+  }
+
+  public collapseContained(node: TaskTreeNode): void {
+    if (this.hasCollapsibleChildren(node)) {
+      // Keep the selected container node expanded so user sees the level below it
+      const nodeExisting = this.nodeStates.get(node.id);
+      const nodeVer = nodeExisting ? nodeExisting.version : 0;
+      this.nodeStates.set(node.id, { isCollapsed: false, version: nodeVer + 1 });
+
+      // Collapse all collapsible children contained within node
+      const containedIds = this.getContainedCollapsibleIds(node);
+      for (const id of containedIds) {
+        const existing = this.nodeStates.get(id);
+        const ver = existing ? existing.version : 0;
+        this.nodeStates.set(id, { isCollapsed: true, version: ver + 1 });
+      }
+    } else {
+      // If node has no collapsible children, collapse node itself
+      const existing = this.nodeStates.get(node.id);
+      const ver = existing ? existing.version : 0;
+      this.nodeStates.set(node.id, { isCollapsed: true, version: ver + 1 });
+    }
+    this._onDidChangeTreeData.fire();
+  }
+
+  public expandContained(node: TaskTreeNode): void {
+    if (this.hasCollapsibleChildren(node)) {
+      // Keep container node expanded
+      const nodeExisting = this.nodeStates.get(node.id);
+      const nodeVer = nodeExisting ? nodeExisting.version : 0;
+      this.nodeStates.set(node.id, { isCollapsed: false, version: nodeVer + 1 });
+
+      // Expand all collapsible children contained within node
+      const containedIds = this.getContainedCollapsibleIds(node);
+      for (const id of containedIds) {
+        const existing = this.nodeStates.get(id);
+        const ver = existing ? existing.version : 0;
+        this.nodeStates.set(id, { isCollapsed: false, version: ver + 1 });
+      }
+    } else {
+      // If node has no collapsible children, expand node itself
+      const existing = this.nodeStates.get(node.id);
+      const ver = existing ? existing.version : 0;
+      this.nodeStates.set(node.id, { isCollapsed: false, version: ver + 1 });
+    }
+    this._onDidChangeTreeData.fire();
+  }
+
+  public toggleContained(node: TaskTreeNode): boolean {
+    const isCollapsed = this.areContainedChildrenCollapsed(node);
+    if (isCollapsed) {
+      this.expandContained(node);
+      return false;
+    } else {
+      this.collapseContained(node);
+      return true;
+    }
+  }
+
   public setNodeCollapsedState(id: string, isCollapsed: boolean): void {
     const existing = this.nodeStates.get(id);
     const currentVer = existing ? existing.version : 0;

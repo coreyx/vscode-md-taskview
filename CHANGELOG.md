@@ -5,6 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.9] - 2026-10-01
+
+### Changed
+- **Target Contained Level on Scoped Expand / Collapse:** Refined the scoped expand/collapse behavior so that selecting a container level (such as a spec group or parent heading) keeps that selected container expanded while collapsing or expanding all milestones/sections contained directly within it. This allows users to select a parent heading level and expand or collapse all sibling milestones at once to view or hide their nested tasks without collapsing the parent container itself.
+
 ## [0.1.8] - 2026-10-01
 
 ### Added
