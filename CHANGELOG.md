@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.8] - 2026-10-01
+
+### Added
+- **Context-Sensitive Expand / Collapse All:** When an item is selected or focused in the TreeView, clicking the toolbar Expand/Collapse toggle button now restricts its operation to the currently focused section (spec group, milestone heading, or parent task) and its descendants, preserving the expanded/collapsed state of other sections. If no item is selected, the toolbar button falls back to operating globally across the entire tree.
+- **Section Expand & Collapse Context Menu:** Added dedicated right-click context menu actions ("Expand All in Section" and "Collapse All in Section") to all spec groups, milestone headings, and task items in the tree view.
+- **Global Expand & Collapse Commands:** Added explicit `mdTaskView.collapseAllGlobal` and `mdTaskView.expandAllGlobal` commands to the Command Palette for full workspace collapse/expansion regardless of active selection.
+- **Tree Hierarchy Navigation (`getParent`):** Implemented `getParent` and section resolver on `TaskTreeDataProvider` to associate child tasks with their parent milestones or tasks for contextual operations.
+
 ## [0.1.7] - 2026-10-01
 
 ### Added

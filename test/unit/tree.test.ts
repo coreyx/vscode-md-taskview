@@ -222,5 +222,78 @@ describe('TaskTreeDataProvider Expand / Collapse All Toggle', () => {
     expect(secondToggle).toBe(false);
     expect(provider.getIsAllCollapsed()).toBe(false);
   });
+
+  it('collapses only the targeted subtree without affecting siblings', () => {
+    const provider = new TaskTreeDataProvider();
+    const { specGroup, heading, simpleTask, parentTask } = createSampleNodes();
+
+    const heading2: HeadingNode = {
+      type: 'heading',
+      id: 'h2',
+      fileUri: dummyFileUri,
+      label: 'Section 2',
+      level: 2,
+      line: 10,
+      children: [],
+      tasks: [],
+      stats: { totalCountable: 0, completedCount: 0, inProgressCount: 0, cancelledCount: 0 },
+    };
+    specGroup.headings = [heading, heading2];
+    provider.addSpecGroup(specGroup);
+
+    // Collapse only heading 1
+    provider.collapseSubtree(heading);
+
+    expect(provider.isNodeCollapsed(heading)).toBe(true);
+    expect(provider.isNodeCollapsed(heading2)).toBe(false);
+
+    const h1Item = provider.getTreeItem(heading);
+    expect(h1Item.collapsibleState).toBe(vscode.TreeItemCollapsibleState.Collapsed);
+    expect(h1Item.id).toBe(`${heading.id}#v1`);
+
+    const h2Item = provider.getTreeItem(heading2);
+    expect(h2Item.collapsibleState).toBe(vscode.TreeItemCollapsibleState.Expanded);
+    expect(h2Item.id).toBe(`${heading2.id}#v0`);
+  });
+
+  it('expands a collapsed subtree without affecting siblings', () => {
+    const provider = new TaskTreeDataProvider();
+    const { specGroup, heading } = createSampleNodes();
+    specGroup.headings = [heading];
+    provider.addSpecGroup(specGroup);
+
+    provider.collapseSubtree(heading);
+    expect(provider.isNodeCollapsed(heading)).toBe(true);
+
+    provider.expandSubtree(heading);
+    expect(provider.isNodeCollapsed(heading)).toBe(false);
+
+    const h1Item = provider.getTreeItem(heading);
+    expect(h1Item.collapsibleState).toBe(vscode.TreeItemCollapsibleState.Expanded);
+    expect(h1Item.id).toBe(`${heading.id}#v2`);
+  });
+
+  it('correctly identifies target sections and parents', () => {
+    const provider = new TaskTreeDataProvider();
+    const { specGroup, heading, simpleTask, parentTask } = createSampleNodes();
+    heading.tasks = [parentTask];
+    specGroup.headings = [heading];
+    provider.addSpecGroup(specGroup);
+
+    // Spec group section is itself
+    expect(provider.getTargetSection(specGroup).id).toBe(specGroup.id);
+    // Heading section is itself
+    expect(provider.getTargetSection(heading).id).toBe(heading.id);
+    // Parent task with subtasks is itself
+    expect(provider.getTargetSection(parentTask).id).toBe(parentTask.id);
+    // Simple leaf subtask resolves to parentTask
+    expect(provider.getTargetSection(simpleTask).id).toBe(parentTask.id);
+
+    // getParent checks
+    expect(provider.getParent(specGroup)).toBeUndefined();
+    expect(provider.getParent(heading)?.id).toBe(specGroup.id);
+    expect(provider.getParent(parentTask)?.id).toBe(heading.id);
+    expect(provider.getParent(simpleTask)?.id).toBe(parentTask.id);
+  });
 });
 

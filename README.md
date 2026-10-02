@@ -35,7 +35,8 @@ Designed for modern spec-driven workflows and supercharged with **Obsidian Tasks
 - **🔍 Productivity View Controls:**
   - **Filter Completed Tasks:** Toggle button (`$(filter)`) to instantly hide finished work.
   - **Refresh:** One-click re-scan and synchronization (`$(refresh)`) with files on disk.
-  - **Expand / Collapse All Toggle:** Dual-state action button (`$(collapse-all)` / `$(expand-all)`) in the view title bar to expand or collapse all tree nodes in one click.
+  - **Expand / Collapse All Toggle & Section Scoping:** Dual-state action button (`$(collapse-all)` / `$(expand-all)`) in the view title bar that automatically limits expand/collapse to the currently focused level/section when an item is selected, and operates globally when nothing is selected.
+  - **Section Expand / Collapse Context Menu:** Right-click any spec group, milestone heading, or task item to select **"Expand All in Section"** or **"Collapse All in Section"**.
   - **Settings Gear:** Quick access (`$(gear)`) to all Markdown Tasks settings directly from the view title bar.
   - **Clean Markdown Display:** Automatically strips bold (`**`, `__`) and italic (`*`, `_`) syntax from labels in the tree view while preserving `snake_case` identifiers.
   - **Milestone Progress Badging:** Heading icons dynamically switch to a solid green bookmark when all nested tasks are completed.
@@ -57,13 +58,13 @@ You can package and install the extension directly from the repository:
 2. **Install into VS Code:**
    - **Via Terminal / CLI:**
      ```bash
-     code --install-extension vscode-md-taskview-0.1.7.vsix
+     code --install-extension vscode-md-taskview-0.1.8.vsix
      ```
    - **Via VS Code Interface:**
      1. Open the **Extensions View** (`Ctrl+Shift+X` on Windows/Linux, `Cmd+Shift+X` on macOS).
      2. Click the **`...` (Views and More Actions)** menu icon at the top right of the Extensions panel.
      3. Select **Install from VSIX...**
-     4. Select the generated `vscode-md-taskview-0.1.7.vsix` file.
+     4. Select the generated `vscode-md-taskview-0.1.8.vsix` file.
 
 ### Option 2: Run in Development Mode (F5)
 
@@ -84,11 +85,11 @@ To run your local build directly in your regular VS Code without packaging:
 
 - **Windows (PowerShell as Administrator or with Developer Mode):**
   ```powershell
-  New-Item -ItemType SymbolicLink -Path "$HOME\.vscode\extensions\coreyx.vscode-md-taskview-0.1.7" -Target (Get-Location)
+  New-Item -ItemType SymbolicLink -Path "$HOME\.vscode\extensions\coreyx.vscode-md-taskview-0.1.8" -Target (Get-Location)
   ```
 - **macOS / Linux:**
   ```bash
-  ln -s "$(pwd)" "$HOME/.vscode/extensions/coreyx.vscode-md-taskview-0.1.7"
+  ln -s "$(pwd)" "$HOME/.vscode/extensions/coreyx.vscode-md-taskview-0.1.8"
   ```
 - Reload VS Code (`Ctrl+Shift+P` / `Cmd+Shift+P` → `Developer: Reload Window`).
 

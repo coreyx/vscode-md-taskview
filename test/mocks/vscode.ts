@@ -176,8 +176,21 @@ export function resetMockTabGroups() {
   closedTabs = [];
 }
 
+export class MockTreeView {
+  selection: any[] = [];
+  private onDidChangeSelectionEmitter = new EventEmitter<any>();
+  onDidChangeSelection = this.onDidChangeSelectionEmitter.event;
+  private onDidCollapseElementEmitter = new EventEmitter<any>();
+  onDidCollapseElement = this.onDidCollapseElementEmitter.event;
+  private onDidExpandElementEmitter = new EventEmitter<any>();
+  onDidExpandElement = this.onDidExpandElementEmitter.event;
+
+  dispose() {}
+}
+
 export const window = {
   tabGroups: mockTabGroups,
+  createTreeView: (id: string, options: any) => new MockTreeView(),
   showTextDocument: async (doc: any, options?: any) => {
     lastShownTextDocument = { doc, options };
     return {

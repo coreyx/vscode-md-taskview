@@ -2,7 +2,7 @@
   "name": "vscode-md-taskview",
   "displayName": "Markdown Tasks View",
   "description": "Visual, hierarchical tree view for Markdown specification task lists (GFM & Obsidian Tasks)",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "publisher": "coreyx",
   "author": "Corey Struzan",
   "license": "MIT",
@@ -34,6 +34,10 @@
     "onCommand:mdTaskView.refresh",
     "onCommand:mdTaskView.collapseAll",
     "onCommand:mdTaskView.expandAll",
+    "onCommand:mdTaskView.collapseSection",
+    "onCommand:mdTaskView.expandSection",
+    "onCommand:mdTaskView.collapseAllGlobal",
+    "onCommand:mdTaskView.expandAllGlobal",
     "onStartupFinished"
   ],
   "contributes": {
@@ -88,6 +92,26 @@
       {
         "command": "mdTaskView.expandAll",
         "title": "Expand All",
+        "icon": "$(expand-all)"
+      },
+      {
+        "command": "mdTaskView.collapseSection",
+        "title": "Collapse All in Section",
+        "icon": "$(collapse-all)"
+      },
+      {
+        "command": "mdTaskView.expandSection",
+        "title": "Expand All in Section",
+        "icon": "$(expand-all)"
+      },
+      {
+        "command": "mdTaskView.collapseAllGlobal",
+        "title": "Collapse All (Global)",
+        "icon": "$(collapse-all)"
+      },
+      {
+        "command": "mdTaskView.expandAllGlobal",
+        "title": "Expand All (Global)",
         "icon": "$(expand-all)"
       },
       {
@@ -170,6 +194,16 @@
           "submenu": "mdTaskView.taskStateSubmenu",
           "when": "view == mdTaskView.tasksView && viewItem == taskItem",
           "group": "1_state"
+        },
+        {
+          "command": "mdTaskView.expandSection",
+          "when": "view == mdTaskView.tasksView && (viewItem == specGroup || viewItem == heading || viewItem == taskItem)",
+          "group": "2_expansion@1"
+        },
+        {
+          "command": "mdTaskView.collapseSection",
+          "when": "view == mdTaskView.tasksView && (viewItem == specGroup || viewItem == heading || viewItem == taskItem)",
+          "group": "2_expansion@2"
         }
       ],
       "mdTaskView.taskStateSubmenu": [

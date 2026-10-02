@@ -12,14 +12,19 @@ export class TaskTreeDataProvider implements vscode.TreeDataProvider<TaskTreeNod
 
   private specGroups: Map<string, SpecGroup> = new Map();
   private isFilterCompletedActive = false;
-  private isAllCollapsed = false;
-  private expandCollapseVersion = 0;
+  private defaultIsCollapsed = false;
+  private globalVersion = 0;
+  private nodeStates: Map<string, { isCollapsed: boolean; version: number }> = new Map();
 
   constructor(
     private discoveryService: SpecDiscoveryService = new SpecDiscoveryService(),
     private configManager: ConfigurationManager = ConfigurationManager.getInstance(),
     private context?: vscode.ExtensionContext
   ) {}
+
+  public addSpecGroup(specGroup: SpecGroup): void {
+    this.specGroups.set(specGroup.taskFileUri.fsPath, specGroup);
+  }
 
   public async refresh(targetNode?: TaskTreeNode): Promise<void> {
     if (!targetNode || targetNode.type === 'specGroup') {
@@ -74,32 +79,176 @@ export class TaskTreeDataProvider implements vscode.TreeDataProvider<TaskTreeNod
   }
 
   public collapseAll(): void {
-    this.isAllCollapsed = true;
-    this.expandCollapseVersion++;
+    this.defaultIsCollapsed = true;
+    this.globalVersion++;
+    this.nodeStates.clear();
     this._onDidChangeTreeData.fire();
   }
 
   public expandAll(): void {
-    this.isAllCollapsed = false;
-    this.expandCollapseVersion++;
+    this.defaultIsCollapsed = false;
+    this.globalVersion++;
+    this.nodeStates.clear();
     this._onDidChangeTreeData.fire();
   }
 
   public toggleExpandCollapse(): boolean {
-    if (this.isAllCollapsed) {
+    if (this.defaultIsCollapsed) {
       this.expandAll();
     } else {
       this.collapseAll();
     }
-    return this.isAllCollapsed;
+    return this.defaultIsCollapsed;
   }
 
   public getIsAllCollapsed(): boolean {
-    return this.isAllCollapsed;
+    return this.defaultIsCollapsed;
+  }
+
+  public collapseSubtree(node: TaskTreeNode): void {
+    const ids = this.collectSubtreeIds(node);
+    for (const id of ids) {
+      const existing = this.nodeStates.get(id);
+      const currentVer = existing ? existing.version : 0;
+      this.nodeStates.set(id, { isCollapsed: true, version: currentVer + 1 });
+    }
+    this._onDidChangeTreeData.fire();
+  }
+
+  public expandSubtree(node: TaskTreeNode): void {
+    const ids = this.collectSubtreeIds(node);
+    for (const id of ids) {
+      const existing = this.nodeStates.get(id);
+      const currentVer = existing ? existing.version : 0;
+      this.nodeStates.set(id, { isCollapsed: false, version: currentVer + 1 });
+    }
+    this._onDidChangeTreeData.fire();
+  }
+
+  public toggleSubtree(node: TaskTreeNode): boolean {
+    const currentlyCollapsed = this.isNodeCollapsed(node);
+    if (currentlyCollapsed) {
+      this.expandSubtree(node);
+      return false;
+    } else {
+      this.collapseSubtree(node);
+      return true;
+    }
+  }
+
+  public setNodeCollapsedState(id: string, isCollapsed: boolean): void {
+    const existing = this.nodeStates.get(id);
+    const currentVer = existing ? existing.version : 0;
+    this.nodeStates.set(id, { isCollapsed, version: currentVer });
+  }
+
+  public isNodeCollapsed(node: TaskTreeNode): boolean {
+    const state = this.nodeStates.get(node.id);
+    if (state !== undefined) {
+      return state.isCollapsed;
+    }
+    return this.defaultIsCollapsed;
+  }
+
+  public getNodeVersion(id: string): number {
+    const state = this.nodeStates.get(id);
+    return this.globalVersion + (state ? state.version : 0);
+  }
+
+  public collectSubtreeIds(node: TaskTreeNode): string[] {
+    const ids: string[] = [node.id];
+    switch (node.type) {
+      case 'specGroup':
+        for (const h of node.headings) {
+          ids.push(...this.collectSubtreeIds(h));
+        }
+        for (const t of node.rootTasks) {
+          ids.push(...this.collectSubtreeIds(t));
+        }
+        break;
+      case 'heading':
+        for (const ch of node.children) {
+          ids.push(...this.collectSubtreeIds(ch));
+        }
+        for (const t of node.tasks) {
+          ids.push(...this.collectSubtreeIds(t));
+        }
+        break;
+      case 'task':
+        for (const st of node.subTasks) {
+          ids.push(...this.collectSubtreeIds(st));
+        }
+        break;
+    }
+    return ids;
+  }
+
+  public getParent(element: TaskTreeNode): TaskTreeNode | undefined {
+    if (element.type === 'specGroup') {
+      return undefined;
+    }
+    for (const specGroup of this.specGroups.values()) {
+      const parent = this.findParentInSubtree(specGroup, element.id);
+      if (parent) return parent;
+    }
+    return undefined;
+  }
+
+  private findParentInSubtree(current: TaskTreeNode, targetId: string): TaskTreeNode | undefined {
+    switch (current.type) {
+      case 'specGroup':
+        for (const h of current.headings) {
+          if (h.id === targetId) return current;
+          const res = this.findParentInSubtree(h, targetId);
+          if (res) return res;
+        }
+        for (const t of current.rootTasks) {
+          if (t.id === targetId) return current;
+          const res = this.findParentInSubtree(t, targetId);
+          if (res) return res;
+        }
+        break;
+      case 'heading':
+        for (const ch of current.children) {
+          if (ch.id === targetId) return current;
+          const res = this.findParentInSubtree(ch, targetId);
+          if (res) return res;
+        }
+        for (const t of current.tasks) {
+          if (t.id === targetId) return current;
+          const res = this.findParentInSubtree(t, targetId);
+          if (res) return res;
+        }
+        break;
+      case 'task':
+        for (const st of current.subTasks) {
+          if (st.id === targetId) return current;
+          const res = this.findParentInSubtree(st, targetId);
+          if (res) return res;
+        }
+        break;
+    }
+    return undefined;
+  }
+
+  public getTargetSection(node: TaskTreeNode): TaskTreeNode {
+    if (node.type === 'specGroup' || node.type === 'heading') {
+      return node;
+    }
+    if (node.type === 'task' && node.subTasks.length > 0) {
+      return node;
+    }
+    const parent = this.getParent(node);
+    if (parent) {
+      return this.getTargetSection(parent);
+    }
+    return node;
   }
 
   public getTreeItem(element: TaskTreeNode): vscode.TreeItem {
     const config = this.configManager.getConfig();
+    const isCollapsed = this.isNodeCollapsed(element);
+    const version = this.getNodeVersion(element.id);
 
     switch (element.type) {
       case 'specGroup': {
@@ -111,12 +260,12 @@ export class TaskTreeDataProvider implements vscode.TreeDataProvider<TaskTreeNod
           }
         }
 
-        const collapsibleState = this.isAllCollapsed
+        const collapsibleState = isCollapsed
           ? vscode.TreeItemCollapsibleState.Collapsed
           : vscode.TreeItemCollapsibleState.Expanded;
 
         const item = new vscode.TreeItem(groupTitle, collapsibleState);
-        item.id = `${element.id}#v${this.expandCollapseVersion}`;
+        item.id = `${element.id}#v${version}`;
         item.contextValue = 'specGroup';
         item.iconPath = new vscode.ThemeIcon('package');
 
@@ -130,12 +279,12 @@ export class TaskTreeDataProvider implements vscode.TreeDataProvider<TaskTreeNod
       }
 
       case 'heading': {
-        const collapsibleState = this.isAllCollapsed
+        const collapsibleState = isCollapsed
           ? vscode.TreeItemCollapsibleState.Collapsed
           : vscode.TreeItemCollapsibleState.Expanded;
 
         const item = new vscode.TreeItem(element.label, collapsibleState);
-        item.id = `${element.id}#v${this.expandCollapseVersion}`;
+        item.id = `${element.id}#v${version}`;
         item.contextValue = 'heading';
 
         const isComplete =
@@ -178,7 +327,7 @@ export class TaskTreeDataProvider implements vscode.TreeDataProvider<TaskTreeNod
         const hasSubtasks = element.subTasks.length > 0;
         let collapsibleState = vscode.TreeItemCollapsibleState.None;
         if (hasSubtasks) {
-          collapsibleState = this.isAllCollapsed
+          collapsibleState = isCollapsed
             ? vscode.TreeItemCollapsibleState.Collapsed
             : vscode.TreeItemCollapsibleState.Expanded;
         }
@@ -193,7 +342,7 @@ export class TaskTreeDataProvider implements vscode.TreeDataProvider<TaskTreeNod
         }
 
         const item = new vscode.TreeItem(displayLabel, collapsibleState);
-        item.id = `${element.id}#v${this.expandCollapseVersion}`;
+        item.id = `${element.id}#v${version}`;
         item.contextValue = 'taskItem';
 
         // Set Icon & Color based on state definition

@@ -28,6 +28,32 @@ export async function activate(context: vscode.ExtensionContext) {
   // Initialize context for collapse/expand toggle
   await vscode.commands.executeCommand('setContext', 'mdTaskView.isCollapsed', false);
 
+  // Track selection changes to update mdTaskView.isCollapsed context
+  treeView.onDidChangeSelection((e) => {
+    if (e.selection.length > 0) {
+      const section = treeDataProvider.getTargetSection(e.selection[0]);
+      const isCollapsed = treeDataProvider.isNodeCollapsed(section);
+      vscode.commands.executeCommand('setContext', 'mdTaskView.isCollapsed', isCollapsed);
+    } else {
+      vscode.commands.executeCommand('setContext', 'mdTaskView.isCollapsed', treeDataProvider.getIsAllCollapsed());
+    }
+  });
+
+  // Track manual element expansion/collapse via chevrons
+  treeView.onDidCollapseElement((e) => {
+    treeDataProvider.setNodeCollapsedState(e.element.id, true);
+    if (treeView.selection.length > 0 && treeView.selection[0].id === e.element.id) {
+      vscode.commands.executeCommand('setContext', 'mdTaskView.isCollapsed', true);
+    }
+  });
+
+  treeView.onDidExpandElement((e) => {
+    treeDataProvider.setNodeCollapsedState(e.element.id, false);
+    if (treeView.selection.length > 0 && treeView.selection[0].id === e.element.id) {
+      vscode.commands.executeCommand('setContext', 'mdTaskView.isCollapsed', false);
+    }
+  });
+
   // 4. Start Live Filesystem & Buffer Watcher
   const watcherService = new FileSystemWatcherService(treeDataProvider, configManager);
   watcherService.start();
@@ -36,11 +62,59 @@ export async function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     treeView,
     watcherService,
-    vscode.commands.registerCommand('mdTaskView.collapseAll', async () => {
+    vscode.commands.registerCommand('mdTaskView.collapseAll', async (node?: TaskTreeNode) => {
+      const target = node || (treeView.selection.length > 0 ? treeView.selection[0] : undefined);
+      if (target) {
+        const section = treeDataProvider.getTargetSection(target);
+        treeDataProvider.collapseSubtree(section);
+        await vscode.commands.executeCommand('setContext', 'mdTaskView.isCollapsed', true);
+      } else {
+        treeDataProvider.collapseAll();
+        await vscode.commands.executeCommand('setContext', 'mdTaskView.isCollapsed', true);
+      }
+    }),
+    vscode.commands.registerCommand('mdTaskView.expandAll', async (node?: TaskTreeNode) => {
+      const target = node || (treeView.selection.length > 0 ? treeView.selection[0] : undefined);
+      if (target) {
+        const section = treeDataProvider.getTargetSection(target);
+        treeDataProvider.expandSubtree(section);
+        await vscode.commands.executeCommand('setContext', 'mdTaskView.isCollapsed', false);
+      } else {
+        treeDataProvider.expandAll();
+        await vscode.commands.executeCommand('setContext', 'mdTaskView.isCollapsed', false);
+      }
+    }),
+    vscode.commands.registerCommand('mdTaskView.collapseSection', async (node?: TaskTreeNode) => {
+      const target = node || (treeView.selection.length > 0 ? treeView.selection[0] : undefined);
+      if (target) {
+        const section = treeDataProvider.getTargetSection(target);
+        treeDataProvider.collapseSubtree(section);
+        if (treeView.selection.length > 0 && treeView.selection[0].id === section.id) {
+          await vscode.commands.executeCommand('setContext', 'mdTaskView.isCollapsed', true);
+        }
+      } else {
+        treeDataProvider.collapseAll();
+        await vscode.commands.executeCommand('setContext', 'mdTaskView.isCollapsed', true);
+      }
+    }),
+    vscode.commands.registerCommand('mdTaskView.expandSection', async (node?: TaskTreeNode) => {
+      const target = node || (treeView.selection.length > 0 ? treeView.selection[0] : undefined);
+      if (target) {
+        const section = treeDataProvider.getTargetSection(target);
+        treeDataProvider.expandSubtree(section);
+        if (treeView.selection.length > 0 && treeView.selection[0].id === section.id) {
+          await vscode.commands.executeCommand('setContext', 'mdTaskView.isCollapsed', false);
+        }
+      } else {
+        treeDataProvider.expandAll();
+        await vscode.commands.executeCommand('setContext', 'mdTaskView.isCollapsed', false);
+      }
+    }),
+    vscode.commands.registerCommand('mdTaskView.collapseAllGlobal', async () => {
       treeDataProvider.collapseAll();
       await vscode.commands.executeCommand('setContext', 'mdTaskView.isCollapsed', true);
     }),
-    vscode.commands.registerCommand('mdTaskView.expandAll', async () => {
+    vscode.commands.registerCommand('mdTaskView.expandAllGlobal', async () => {
       treeDataProvider.expandAll();
       await vscode.commands.executeCommand('setContext', 'mdTaskView.isCollapsed', false);
     }),
