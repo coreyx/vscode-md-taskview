@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.11] - 2026-10-01
+
+### Changed
+- **Goalpost Flag Icons for Milestones:** Replaced the bookmark icon for milestones with a goalpost flag icon. Incomplete milestones display an outlined flag (`$(flag)`), while completed milestones (where all nested tasks are finished) display a solid green filled flag (`resources/icons/*/milestone-filled.svg`).
+- **Heading vs. Milestone Distinction:** Normal headings that do not contain milestone keywords retain the original bookmark icon (`$(bookmark)`), displayed in outline form without filling regardless of task completion state. Normal headings without tasks continue to be displayed as section dividers in the tree view.
+
+### Added
+- **Configurable Milestone Keywords (`mdTaskView.milestoneKeywords`):** Introduced a configurable keyword list (default: `["Milestone", "Release", "Alpha", "Beta"]`) used to detect milestone headings with word boundary and case-insensitive matching.
+
 ## [0.1.10] - 2026-10-01
 
 ### Added

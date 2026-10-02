@@ -2,7 +2,7 @@
   "name": "vscode-md-taskview",
   "displayName": "Markdown Tasks View",
   "description": "Visual, hierarchical tree view for Markdown specification task lists (GFM & Obsidian Tasks)",
-  "version": "0.1.10",
+  "version": "0.1.11",
   "publisher": "coreyx",
   "author": "Corey Struzan",
   "license": "MIT",
@@ -322,6 +322,19 @@
           ],
           "default": "auto",
           "description": "How to open specification markdown files when clicking a task or milestone in the tree view."
+        },
+        "mdTaskView.milestoneKeywords": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [
+            "Milestone",
+            "Release",
+            "Alpha",
+            "Beta"
+          ],
+          "description": "Keywords used to identify milestone headings in markdown files. Headings matching any of these keywords are treated as milestones and displayed with a goalpost flag icon."
         }
       }
     }

@@ -6,6 +6,18 @@ import { MarkdownASTParser } from '../parser/MarkdownASTParser.js';
 import { ConfigurationManager } from '../config/ConfigurationManager.js';
 import { StateTemplateEngine } from '../templates/StateTemplateEngine.js';
 
+export function isMilestoneHeading(label: string, keywords: string[]): boolean {
+  if (!label || !keywords || keywords.length === 0) return false;
+  const normalizedLabel = label.trim().toLowerCase();
+  return keywords.some((kw) => {
+    const trimmed = kw.trim().toLowerCase();
+    if (!trimmed) return false;
+    const escaped = trimmed.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const pattern = new RegExp(`(^|[^a-zA-Z0-9])${escaped}(?:s|es)?([^a-zA-Z0-9]|$)`, 'i');
+    return pattern.test(normalizedLabel);
+  });
+}
+
 export class TaskTreeDataProvider implements vscode.TreeDataProvider<TaskTreeNode> {
   private _onDidChangeTreeData = new vscode.EventEmitter<TaskTreeNode | undefined | null | void>();
   readonly onDidChangeTreeData = this._onDidChangeTreeData.event;
@@ -453,14 +465,20 @@ export class TaskTreeDataProvider implements vscode.TreeDataProvider<TaskTreeNod
           element.stats.totalCountable > 0 &&
           element.stats.completedCount === element.stats.totalCountable;
 
-        if (isComplete) {
-          if (this.context) {
-            item.iconPath = {
-              light: vscode.Uri.joinPath(this.context.extensionUri, 'resources', 'icons', 'light', 'bookmark-filled.svg'),
-              dark: vscode.Uri.joinPath(this.context.extensionUri, 'resources', 'icons', 'dark', 'bookmark-filled.svg'),
-            };
+        const isMilestone = isMilestoneHeading(element.label, config.milestoneKeywords);
+
+        if (isMilestone) {
+          if (isComplete) {
+            if (this.context) {
+              item.iconPath = {
+                light: vscode.Uri.joinPath(this.context.extensionUri, 'resources', 'icons', 'light', 'milestone-filled.svg'),
+                dark: vscode.Uri.joinPath(this.context.extensionUri, 'resources', 'icons', 'dark', 'milestone-filled.svg'),
+              };
+            } else {
+              item.iconPath = new vscode.ThemeIcon('flag', new vscode.ThemeColor('charts.green'));
+            }
           } else {
-            item.iconPath = new vscode.ThemeIcon('bookmark', new vscode.ThemeColor('charts.green'));
+            item.iconPath = new vscode.ThemeIcon('flag');
           }
         } else {
           item.iconPath = new vscode.ThemeIcon('bookmark');

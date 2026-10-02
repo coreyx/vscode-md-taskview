@@ -1,12 +1,41 @@
 import { describe, it, expect } from 'vitest';
 import * as vscode from 'vscode';
-import { TaskTreeDataProvider } from '../../src/views/TaskTreeDataProvider.js';
+import { TaskTreeDataProvider, isMilestoneHeading } from '../../src/views/TaskTreeDataProvider.js';
 import { HeadingNode, SpecGroup } from '../../src/models/types.js';
+
+describe('isMilestoneHeading', () => {
+  const defaultKeywords = ['Milestone', 'Release', 'Alpha', 'Beta'];
+
+  it('detects milestone keywords with word boundaries and case insensitivity', () => {
+    expect(isMilestoneHeading('Milestone 1: Project Setup', defaultKeywords)).toBe(true);
+    expect(isMilestoneHeading('milestone 2', defaultKeywords)).toBe(true);
+    expect(isMilestoneHeading('Milestones', defaultKeywords)).toBe(true);
+    expect(isMilestoneHeading('Release 1.0.0', defaultKeywords)).toBe(true);
+    expect(isMilestoneHeading('Pre-release Checklist', defaultKeywords)).toBe(true);
+    expect(isMilestoneHeading('Alpha 1', defaultKeywords)).toBe(true);
+    expect(isMilestoneHeading('Beta Testing', defaultKeywords)).toBe(true);
+  });
+
+  it('does not falsely match normal headings or partial words', () => {
+    expect(isMilestoneHeading('Database Setup', defaultKeywords)).toBe(false);
+    expect(isMilestoneHeading('Architecture & Design', defaultKeywords)).toBe(false);
+    expect(isMilestoneHeading('Alphabetical Index', defaultKeywords)).toBe(false);
+    expect(isMilestoneHeading('Betatron Device', defaultKeywords)).toBe(false);
+    expect(isMilestoneHeading('Overview', defaultKeywords)).toBe(false);
+  });
+
+  it('supports custom configured milestone keywords', () => {
+    const customKeywords = ['Sprint', 'Phase'];
+    expect(isMilestoneHeading('Sprint 4', customKeywords)).toBe(true);
+    expect(isMilestoneHeading('Phase 1', customKeywords)).toBe(true);
+    expect(isMilestoneHeading('Milestone 1', customKeywords)).toBe(false);
+  });
+});
 
 describe('TaskTreeDataProvider Heading Icons', () => {
   const dummyFileUri = vscode.Uri.file('/workspace/spec/tasks.md');
 
-  it('should display outline bookmark icon for incomplete headings', () => {
+  it('should display outline flag icon for incomplete milestones', () => {
     const provider = new TaskTreeDataProvider();
     const heading: HeadingNode = {
       type: 'heading',
@@ -22,10 +51,10 @@ describe('TaskTreeDataProvider Heading Icons', () => {
 
     const treeItem = provider.getTreeItem(heading);
     expect(treeItem.iconPath).toBeInstanceOf(vscode.ThemeIcon);
-    expect((treeItem.iconPath as vscode.ThemeIcon).id).toBe('bookmark');
+    expect((treeItem.iconPath as vscode.ThemeIcon).id).toBe('flag');
   });
 
-  it('should display filled bookmark icon for completed headings when context is provided', () => {
+  it('should display filled flag icon for completed milestones when context is provided', () => {
     const mockContext: any = {
       extensionUri: vscode.Uri.file('/extension/root'),
     };
@@ -45,13 +74,13 @@ describe('TaskTreeDataProvider Heading Icons', () => {
     const treeItem = provider.getTreeItem(heading);
     expect(treeItem.iconPath).not.toBeInstanceOf(vscode.ThemeIcon);
     const iconObj = treeItem.iconPath as { light: vscode.Uri; dark: vscode.Uri };
-    expect(iconObj.light.path).toContain('bookmark-filled.svg');
-    expect(iconObj.dark.path).toContain('bookmark-filled.svg');
+    expect(iconObj.light.path).toContain('milestone-filled.svg');
+    expect(iconObj.dark.path).toContain('milestone-filled.svg');
     expect(iconObj.light.path).toContain('light');
     expect(iconObj.dark.path).toContain('dark');
   });
 
-  it('should fall back to green ThemeIcon for completed headings when context is not provided', () => {
+  it('should fall back to green ThemeIcon for completed milestones when context is not provided', () => {
     const provider = new TaskTreeDataProvider();
     const heading: HeadingNode = {
       type: 'heading',
@@ -67,8 +96,49 @@ describe('TaskTreeDataProvider Heading Icons', () => {
 
     const treeItem = provider.getTreeItem(heading);
     expect(treeItem.iconPath).toBeInstanceOf(vscode.ThemeIcon);
-    expect((treeItem.iconPath as vscode.ThemeIcon).id).toBe('bookmark');
+    expect((treeItem.iconPath as vscode.ThemeIcon).id).toBe('flag');
     expect((treeItem.iconPath as any).color).toBeDefined();
+  });
+
+  it('should display outline bookmark icon for normal headings without tasks', () => {
+    const provider = new TaskTreeDataProvider();
+    const heading: HeadingNode = {
+      type: 'heading',
+      id: 'h2',
+      fileUri: dummyFileUri,
+      label: 'Database Schema',
+      level: 2,
+      line: 10,
+      children: [],
+      tasks: [],
+      stats: { totalCountable: 0, completedCount: 0, inProgressCount: 0, cancelledCount: 0 },
+    };
+
+    const treeItem = provider.getTreeItem(heading);
+    expect(treeItem.iconPath).toBeInstanceOf(vscode.ThemeIcon);
+    expect((treeItem.iconPath as vscode.ThemeIcon).id).toBe('bookmark');
+  });
+
+  it('should display outline bookmark icon for normal headings even when all tasks are complete', () => {
+    const mockContext: any = {
+      extensionUri: vscode.Uri.file('/extension/root'),
+    };
+    const provider = new TaskTreeDataProvider(undefined, undefined, mockContext);
+    const heading: HeadingNode = {
+      type: 'heading',
+      id: 'h3',
+      fileUri: dummyFileUri,
+      label: 'API Endpoints',
+      level: 2,
+      line: 20,
+      children: [],
+      tasks: [],
+      stats: { totalCountable: 4, completedCount: 4, inProgressCount: 0, cancelledCount: 0 },
+    };
+
+    const treeItem = provider.getTreeItem(heading);
+    expect(treeItem.iconPath).toBeInstanceOf(vscode.ThemeIcon);
+    expect((treeItem.iconPath as vscode.ThemeIcon).id).toBe('bookmark');
   });
 });
 

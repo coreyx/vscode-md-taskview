@@ -13,6 +13,7 @@ export interface TaskViewConfig {
   hideCompletedByDefault: boolean;
   useH1AsGroupName: boolean;
   openEditor: 'auto' | 'textEditor' | 'preview';
+  milestoneKeywords: string[];
 }
 
 export class ConfigurationManager {
@@ -61,6 +62,7 @@ export class ConfigurationManager {
       hideCompletedByDefault: config?.get<boolean>('hideCompletedByDefault', false) ?? false,
       useH1AsGroupName: config?.get<boolean>('useH1AsGroupName', false) ?? false,
       openEditor: config?.get<'auto' | 'textEditor' | 'preview'>('openEditor', 'auto') ?? 'auto',
+      milestoneKeywords: config?.get<string[]>('milestoneKeywords', ['Milestone', 'Release', 'Alpha', 'Beta']) ?? ['Milestone', 'Release', 'Alpha', 'Beta'],
     };
   }
 }
