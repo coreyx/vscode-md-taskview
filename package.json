@@ -2,7 +2,7 @@
   "name": "vscode-md-taskview",
   "displayName": "Markdown Tasks View",
   "description": "Visual, hierarchical tree view for Markdown specification task lists (GFM & Obsidian Tasks)",
-  "version": "0.1.9",
+  "version": "0.1.10",
   "publisher": "coreyx",
   "author": "Corey Struzan",
   "license": "MIT",

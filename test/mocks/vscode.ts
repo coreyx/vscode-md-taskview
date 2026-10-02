@@ -185,6 +185,12 @@ export class MockTreeView {
   private onDidExpandElementEmitter = new EventEmitter<any>();
   onDidExpandElement = this.onDidExpandElementEmitter.event;
 
+  reveal = async (element: any, options?: any) => {
+    if (options?.select) {
+      this.selection = [element];
+    }
+  };
+
   dispose() {}
 }
 

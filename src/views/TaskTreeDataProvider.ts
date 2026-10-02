@@ -361,6 +361,52 @@ export class TaskTreeDataProvider implements vscode.TreeDataProvider<TaskTreeNod
     return node;
   }
 
+  public findNodeById(id: string): TaskTreeNode | undefined {
+    for (const specGroup of this.specGroups.values()) {
+      if (specGroup.id === id) return specGroup;
+      const found = this.findNodeInSubtree(specGroup, id);
+      if (found) return found;
+    }
+    return undefined;
+  }
+
+  private findNodeInSubtree(parent: TaskTreeNode, id: string): TaskTreeNode | undefined {
+    switch (parent.type) {
+      case 'specGroup':
+        for (const h of parent.headings) {
+          if (h.id === id) return h;
+          const res = this.findNodeInSubtree(h, id);
+          if (res) return res;
+        }
+        for (const t of parent.rootTasks) {
+          if (t.id === id) return t;
+          const res = this.findNodeInSubtree(t, id);
+          if (res) return res;
+        }
+        break;
+      case 'heading':
+        for (const ch of parent.children) {
+          if (ch.id === id) return ch;
+          const res = this.findNodeInSubtree(ch, id);
+          if (res) return res;
+        }
+        for (const t of parent.tasks) {
+          if (t.id === id) return t;
+          const res = this.findNodeInSubtree(t, id);
+          if (res) return res;
+        }
+        break;
+      case 'task':
+        for (const st of parent.subTasks) {
+          if (st.id === id) return st;
+          const res = this.findNodeInSubtree(st, id);
+          if (res) return res;
+        }
+        break;
+    }
+    return undefined;
+  }
+
   public getTreeItem(element: TaskTreeNode): vscode.TreeItem {
     const config = this.configManager.getConfig();
     const isCollapsed = this.isNodeCollapsed(element);

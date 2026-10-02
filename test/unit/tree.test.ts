@@ -352,5 +352,19 @@ describe('TaskTreeDataProvider Expand / Collapse All Toggle', () => {
     const h1Item = provider.getTreeItem(heading);
     expect(h1Item.collapsibleState).toBe(vscode.TreeItemCollapsibleState.Expanded);
   });
+
+  it('finds nodes by id in spec groups, headings, tasks, and subtasks', () => {
+    const provider = new TaskTreeDataProvider();
+    const { specGroup, heading, simpleTask, parentTask } = createSampleNodes();
+    heading.tasks = [parentTask];
+    specGroup.headings = [heading];
+    provider.addSpecGroup(specGroup);
+
+    expect(provider.findNodeById(specGroup.id)).toBe(specGroup);
+    expect(provider.findNodeById(heading.id)).toBe(heading);
+    expect(provider.findNodeById(parentTask.id)).toBe(parentTask);
+    expect(provider.findNodeById(simpleTask.id)).toBe(simpleTask);
+    expect(provider.findNodeById('non-existent')).toBeUndefined();
+  });
 });
 
