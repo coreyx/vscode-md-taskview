@@ -1,40 +1,39 @@
-# Release Notes - v0.1.11
+# Release Notes - v0.1.12
 
 ## VS Code Markdown Task View (`vscode-md-taskview`)
 
-Release **v0.1.11** introduces goalpost flag icons for milestones and differentiates milestones from normal document headings using configurable keyword detection.
+Release **v0.1.12** fixes task lists whose tasks are written as headings, which previously showed up as plain outline sections that never counted as complete.
 
 ---
 
-## 🛠️ What's New
+## 🛠️ What's Fixed
 
-### ⛳ Goalpost Flag Icons for Milestones
-- **Flag Icons for Milestones:** Milestone headings now display a goalpost flag icon instead of a bookmark.
-  - **Outlined Flag (`$(flag)`):** Rendered when a milestone contains unfinished tasks (or is in progress).
-  - **Filled Green Flag:** Rendered in solid theme green when all tasks contained within the milestone are completed.
+### ✅ Checklist Items Written as Headings
+- **Recognized as Tasks:** Headings whose text is a checklist item (e.g. `### - [x] Task 1.1: Scaffolding`) are now treated as tasks instead of section headings.
+  - **Correct State Icons:** Checked heading tasks display the filled green done icon rather than an outline bookmark, and no longer show a literal `- [x]` prefix in their label.
+  - **Counted Toward Progress:** Heading tasks are included in `(completed/total)` counts, so milestones made up of them fill in green once every task is checked.
+  - **Toggle From the Tree:** Heading tasks can be cycled through states from the tree view like any other task.
 
-### 🔖 Distinct Normal Headings
-- **Preserved Section Dividers:** Normal headings that do not contain milestone keywords (such as `# Overview`, `## Database Schema`, or `## Notes`) retain the original bookmark icon (`$(bookmark)`).
-- **Outlined Only:** Normal headings are always displayed with an outlined bookmark (never filled), clearly separating structural document sections from milestones.
-- **Headings Without Tasks:** Headings without tasks underneath them continue to be displayed cleanly in the tree view outline.
+### 🌿 Sub-Tasks Under Heading Tasks
+- **Nested Checklists:** Checklist items listed beneath a heading task appear as its sub-tasks.
+- **Nested Heading Tasks:** A deeper heading task (e.g. `####`) nests under the shallower heading task above it.
 
-### ⚙️ Configurable Milestone Keywords (`mdTaskView.milestoneKeywords`)
-- **Default Keywords:** `["Milestone", "Release", "Alpha", "Beta"]` (case-insensitive with word boundary matching and optional plural support).
-- **Customizable:** Users can configure their own list of milestone identifiers (e.g. `Sprint`, `Phase`, `Epic`) in VS Code Settings (`mdTaskView.milestoneKeywords`).
+### 🧭 Preview Navigation
+- **Scroll to the Task Itself:** In Markdown Preview mode, clicking a heading task or one of its sub-tasks scrolls to that task's own heading rather than the enclosing milestone.
 
 ---
 
 ## 📦 Installation
 
-Download the attached `vscode-md-taskview-0.1.11.vsix` asset below and install it into VS Code:
+Download the attached `vscode-md-taskview-0.1.12.vsix` asset below and install it into VS Code:
 
 ### Option A: Via Command Line
 ```bash
-code --install-extension vscode-md-taskview-0.1.11.vsix
+code --install-extension vscode-md-taskview-0.1.12.vsix
 ```
 
 ### Option B: Via VS Code Interface
 1. Open the **Extensions View** in VS Code (`Ctrl+Shift+X` / `Cmd+Shift+X`).
 2. Click the **`...` (Views and More Actions)** menu icon at the top-right corner.
 3. Select **Install from VSIX...**
-4. Select the downloaded `vscode-md-taskview-0.1.11.vsix` file.
+4. Select the downloaded `vscode-md-taskview-0.1.12.vsix` file.

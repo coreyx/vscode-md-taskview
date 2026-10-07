@@ -163,4 +163,51 @@ Some introductory paragraph text without tasks.
     expect(h2.slug).toBe('milestone-2-task-checkbox-state-cycling');
     expect(h2.tasks[0].parentHeadingSlug).toBe('milestone-2-task-checkbox-state-cycling');
   });
+
+  it('should parse checklist items written as headings as tasks', () => {
+    const markdown = `
+## Milestone 1: Setup
+### - [x] Task 1.1: Scaffolding
+- **Concrete Steps**:
+  1. Initialize the project.
+### - [ ] Task 1.2: Styling
+- [x] Install dependencies
+  - [ ] Configure theme
+#### - [x] Task 1.2.1: Nested heading task
+## Milestone 2: Done
+### - [x] Task 2.1: Only task
+`;
+    const spec = MarkdownASTParser.parse(markdown, 'auth', dummyFileUri, dummyFolderUri);
+
+    expect(spec.headings.length).toBe(2);
+    const m1 = spec.headings[0];
+    expect(m1.children.length).toBe(0);
+    expect(m1.tasks.length).toBe(2);
+
+    const t11 = m1.tasks[0];
+    expect(t11.cleanText).toBe('Task 1.1: Scaffolding');
+    expect(t11.char).toBe('x');
+    expect(t11.isCompleted).toBe(true);
+    expect(t11.subTasks.length).toBe(0);
+    expect(t11.line).toBe(2);
+    expect(t11.bracketRange.openBracketCol).toBe(6);
+    expect(t11.bracketRange.charCol).toBe(7);
+    expect(t11.bracketRange.closeBracketCol).toBe(8);
+    expect(t11.parentHeadingId).toBe(m1.id);
+
+    const t12 = m1.tasks[1];
+    expect(t12.cleanText).toBe('Task 1.2: Styling');
+    expect(t12.isCompleted).toBe(false);
+    expect(t12.subTasks.map((t) => t.cleanText)).toEqual(['Install dependencies', 'Task 1.2.1: Nested heading task']);
+    expect(t12.subTasks[0].subTasks[0].cleanText).toBe('Configure theme');
+    expect(t12.subTasks[0].parentHeadingSlug).toBe(t12.parentHeadingSlug);
+
+    expect(m1.stats.totalCountable).toBe(5);
+    expect(m1.stats.completedCount).toBe(3);
+
+    const m2 = spec.headings[1];
+    expect(m2.tasks.length).toBe(1);
+    expect(m2.stats.totalCountable).toBe(1);
+    expect(m2.stats.completedCount).toBe(1);
+  });
 });

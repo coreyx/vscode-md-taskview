@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.12] - 2026-10-06
+
+### Fixed
+- **Checklist Items Written as Headings:** Headings whose text is a checklist item (e.g. `### - [x] Task 1.1: Scaffolding`) are now parsed as tasks instead of section headings. Previously they were displayed with the outline bookmark icon and a literal `- [x]` prefix regardless of their checked state, and were excluded from progress counts, so their parent milestones never showed as complete. They now render with the correct state icon, count toward milestone and spec group progress, and can be toggled from the tree view.
+
+### Changed
+- **Sub-Tasks Under Heading Tasks:** Checklist items listed beneath a heading task are nested under it as sub-tasks, and deeper heading tasks nest under shallower ones.
+- **Preview Navigation for Heading Tasks:** In Markdown Preview mode, clicking a heading task (or one of its sub-tasks) scrolls to that task's own heading rather than the enclosing milestone.
+
 ## [0.1.11] - 2026-10-01
 
 ### Changed

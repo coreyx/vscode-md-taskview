@@ -30,9 +30,60 @@ export class MarkdownASTParser {
     let taskStack: TaskNode[] = [];
     let currentHeading: HeadingNode | undefined = undefined;
 
+    // Slug of the nearest preceding heading line (section or heading task), used as the preview anchor
+    let currentSlug: string | undefined = undefined;
+
     // Regular expressions for ATX headings and checklist items
     const headingRegex = /^(\#{1,6})\s+(.+)$/;
     const taskRegex = /^(\s*)[-*+]\s+\[(.*?)\]\s*(.*)$/;
+
+    const addTask = (lineIndex: number, lineStr: string, indentLevel: number, char: string, text: string): void => {
+      const cleanText = this.stripMarkdownFormatting(text.trim());
+
+      // Calculate bracket range columns
+      const openBracketCol = lineStr.indexOf('[');
+      const closeBracketCol = lineStr.indexOf(']', openBracketCol);
+      const bracketRange: BracketRange = {
+        line: lineIndex,
+        openBracketCol,
+        charCol: openBracketCol + 1,
+        closeBracketCol,
+      };
+
+      const stateDef = StateTemplateEngine.getInstance().getState(char);
+      const isCompleted = stateDef.countsAsCompleted ?? (char.toLowerCase() === 'x');
+
+      const taskNode: TaskNode = {
+        type: 'task',
+        id: `${fileUri.fsPath}#T${lineIndex}`,
+        fileUri,
+        rawText: lineStr,
+        cleanText: cleanText || '(Empty task)',
+        char,
+        bracketRange,
+        line: lineIndex,
+        indentation: indentLevel,
+        subTasks: [],
+        isCompleted,
+        parentHeadingId: currentHeading?.id,
+        parentHeadingSlug: currentSlug,
+      };
+
+      // Find parent task in taskStack with lower indentation
+      while (taskStack.length > 0 && taskStack[taskStack.length - 1].indentation >= indentLevel) {
+        taskStack.pop();
+      }
+
+      if (taskStack.length > 0) {
+        // Indented subtask
+        taskStack[taskStack.length - 1].subTasks.push(taskNode);
+      } else {
+        // Top-level task in current heading scope
+        this.attachTaskToScope(taskNode, currentHeading, rootTasks);
+      }
+
+      taskStack.push(taskNode);
+    };
 
     for (let lineIndex = 0; lineIndex < lines.length; lineIndex++) {
       const lineStr = lines[lineIndex];
@@ -43,6 +94,21 @@ export class MarkdownASTParser {
         const level = headingMatch[1].length;
         const label = this.stripMarkdownFormatting(headingMatch[2].trim());
         const slug = slugBuilder.add(label);
+        currentSlug = slug;
+
+        // Pop headingStack until we find a parent with a strictly lower level
+        while (headingStack.length > 0 && headingStack[headingStack.length - 1].level >= level) {
+          headingStack.pop();
+        }
+
+        // Heading written as a checklist item (### - [x] Task 1.1) is a task, not a section
+        const headingTaskMatch = headingMatch[2].trim().match(taskRegex);
+        if (headingTaskMatch) {
+          currentHeading = headingStack[headingStack.length - 1];
+          // Negative indentation: list items below nest under it, deeper heading tasks nest under shallower ones
+          addTask(lineIndex, lineStr, level - 7, headingTaskMatch[2], headingTaskMatch[3]);
+          continue;
+        }
 
         const newHeading: HeadingNode = {
           type: 'heading',
@@ -61,11 +127,6 @@ export class MarkdownASTParser {
         taskStack = [];
         currentHeading = newHeading;
 
-        // Pop headingStack until we find a parent with a strictly lower level
-        while (headingStack.length > 0 && headingStack[headingStack.length - 1].level >= level) {
-          headingStack.pop();
-        }
-
         if (headingStack.length === 0) {
           // Top-level heading within this spec document
           headings.push(newHeading);
@@ -81,61 +142,8 @@ export class MarkdownASTParser {
       // 2. Check for Checklist Item (- [ ] ...)
       const taskMatch = lineStr.match(taskRegex);
       if (taskMatch) {
-        const indentStr = taskMatch[1];
-        const indentLevel = this.calculateIndentation(indentStr);
-        const char = taskMatch[2];
-        const cleanText = this.stripMarkdownFormatting(taskMatch[3].trim());
-
-        // Calculate bracket range columns
-        const openBracketCol = lineStr.indexOf('[');
-        const closeBracketCol = lineStr.indexOf(']', openBracketCol);
-        const bracketRange: BracketRange = {
-          line: lineIndex,
-          openBracketCol,
-          charCol: openBracketCol + 1,
-          closeBracketCol,
-        };
-
-        const stateDef = StateTemplateEngine.getInstance().getState(char);
-        const isCompleted = stateDef.countsAsCompleted ?? (char.toLowerCase() === 'x');
-
-        const taskNode: TaskNode = {
-          type: 'task',
-          id: `${fileUri.fsPath}#T${lineIndex}`,
-          fileUri,
-          rawText: lineStr,
-          cleanText: cleanText || '(Empty task)',
-          char,
-          bracketRange,
-          line: lineIndex,
-          indentation: indentLevel,
-          subTasks: [],
-          isCompleted,
-          parentHeadingId: currentHeading?.id,
-          parentHeadingSlug: currentHeading?.slug,
-        };
-
-        // Determine hierarchy based on indentation
-        if (taskStack.length === 0) {
-          // First task in current scope
-          this.attachTaskToScope(taskNode, currentHeading, rootTasks);
-          taskStack.push(taskNode);
-        } else {
-          // Find parent task in taskStack with lower indentation
-          while (taskStack.length > 0 && taskStack[taskStack.length - 1].indentation >= indentLevel) {
-            taskStack.pop();
-          }
-
-          if (taskStack.length > 0) {
-            // Indented subtask
-            taskStack[taskStack.length - 1].subTasks.push(taskNode);
-          } else {
-            // Sibling top-level task in current heading scope
-            this.attachTaskToScope(taskNode, currentHeading, rootTasks);
-          }
-
-          taskStack.push(taskNode);
-        }
+        const indentLevel = this.calculateIndentation(taskMatch[1]);
+        addTask(lineIndex, lineStr, indentLevel, taskMatch[2], taskMatch[3]);
       }
     }
 

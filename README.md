@@ -58,13 +58,13 @@ You can package and install the extension directly from the repository:
 2. **Install into VS Code:**
    - **Via Terminal / CLI:**
      ```bash
-     code --install-extension vscode-md-taskview-0.1.11.vsix
+     code --install-extension vscode-md-taskview-0.1.12.vsix
      ```
    - **Via VS Code Interface:**
      1. Open the **Extensions View** (`Ctrl+Shift+X` on Windows/Linux, `Cmd+Shift+X` on macOS).
      2. Click the **`...` (Views and More Actions)** menu icon at the top right of the Extensions panel.
      3. Select **Install from VSIX...**
-     4. Select the generated `vscode-md-taskview-0.1.11.vsix` file.
+     4. Select the generated `vscode-md-taskview-0.1.12.vsix` file.
 
 ### Option 2: Run in Development Mode (F5)
 
@@ -85,11 +85,11 @@ To run your local build directly in your regular VS Code without packaging:
 
 - **Windows (PowerShell as Administrator or with Developer Mode):**
   ```powershell
-  New-Item -ItemType SymbolicLink -Path "$HOME\.vscode\extensions\coreyx.vscode-md-taskview-0.1.11" -Target (Get-Location)
+  New-Item -ItemType SymbolicLink -Path "$HOME\.vscode\extensions\coreyx.vscode-md-taskview-0.1.12" -Target (Get-Location)
   ```
 - **macOS / Linux:**
   ```bash
-  ln -s "$(pwd)" "$HOME/.vscode/extensions/coreyx.vscode-md-taskview-0.1.11"
+  ln -s "$(pwd)" "$HOME/.vscode/extensions/coreyx.vscode-md-taskview-0.1.12"
   ```
 - Reload VS Code (`Ctrl+Shift+P` / `Cmd+Shift+P` → `Developer: Reload Window`).
 
@@ -118,6 +118,7 @@ To run your local build directly in your regular VS Code without packaging:
    - [?] Verify OAuth redirect URLs
    - [!] Rotate production JWT secrets
    ```
+   Checklist items written as headings (e.g. `### - [x] Task 1.1: Scaffolding`) are also recognized as tasks, with any checklist items beneath them shown as sub-tasks.
 3. Open the **Markdown Tasks** view container in the VS Code Activity Bar (`$(checklist)` icon) to view and interact with your tasks!
 
 ---
