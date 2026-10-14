@@ -36,6 +36,7 @@ Designed for modern spec-driven workflows and supercharged with **Obsidian Tasks
     - Started: **Continue** | **Mark done** | **Mark not started**
     - Done: **Mark not done**
   - **Start** marks the task in progress (`[/]`), and **Continue** opens the task in the editor. The same actions are in each task's right-click menu in the tree view.
+  - The **Standard (GFM)** template has no in-progress state, so its tasks offer only **Mark done** and **Mark not done**.
   - Turn the editor actions off with `mdTaskView.showTaskActions`. They are CodeLens, so they also need `editor.codeLens` enabled and do not appear in Markdown Preview.
   - **Animated In-Progress Spinner:** In-progress tasks display a rotating spinner. When `mdTaskView.animateTaskIcons` is disabled or VS Code's `accessibility.reducedMotion` is `on`, a static circular arrow icon is shown instead.
 - **🛠️ Extensible `*.jsonc` State Template System:**
@@ -66,13 +67,13 @@ You can package and install the extension directly from the repository:
 2. **Install into VS Code:**
    - **Via Terminal / CLI:**
      ```bash
-     code --install-extension vscode-md-taskview-0.1.13.vsix
+     code --install-extension vscode-md-taskview-0.1.14.vsix
      ```
    - **Via VS Code Interface:**
      1. Open the **Extensions View** (`Ctrl+Shift+X` on Windows/Linux, `Cmd+Shift+X` on macOS).
      2. Click the **`...` (Views and More Actions)** menu icon at the top right of the Extensions panel.
      3. Select **Install from VSIX...**
-     4. Select the generated `vscode-md-taskview-0.1.13.vsix` file.
+     4. Select the generated `vscode-md-taskview-0.1.14.vsix` file.
 
 ### Option 2: Run in Development Mode (F5)
 
@@ -93,11 +94,11 @@ To run your local build directly in your regular VS Code without packaging:
 
 - **Windows (PowerShell as Administrator or with Developer Mode):**
   ```powershell
-  New-Item -ItemType SymbolicLink -Path "$HOME\.vscode\extensions\coreyx.vscode-md-taskview-0.1.13" -Target (Get-Location)
+  New-Item -ItemType SymbolicLink -Path "$HOME\.vscode\extensions\coreyx.vscode-md-taskview-0.1.14" -Target (Get-Location)
   ```
 - **macOS / Linux:**
   ```bash
-  ln -s "$(pwd)" "$HOME/.vscode/extensions/coreyx.vscode-md-taskview-0.1.13"
+  ln -s "$(pwd)" "$HOME/.vscode/extensions/coreyx.vscode-md-taskview-0.1.14"
   ```
 - Reload VS Code (`Ctrl+Shift+P` / `Cmd+Shift+P` → `Developer: Reload Window`).
 

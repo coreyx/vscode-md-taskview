@@ -35,6 +35,9 @@ export type TaskOrigin = TaskTreeNode | TaskRef | undefined;
 /**
  * The actions a task offers, by the state its bracket character stands for.
  * A character that is neither not started, started, nor done can be set to either end.
+ *
+ * A template with no in-progress state, as Standard (GFM), has nothing to start or continue,
+ * so its tasks offer only "Mark done" and "Mark not done".
  */
 export function getTaskActions(
   char: string,
@@ -43,13 +46,17 @@ export function getTaskActions(
   if (stateEngine.getState(char).countsAsCompleted) {
     return ['markNotDone'];
   }
-  if (char === stateEngine.getInProgressChar()) {
+
+  const inProgressChar = stateEngine.getInProgressChar();
+  const isNotStarted = char === stateEngine.getDefaultChar();
+
+  if (inProgressChar === undefined) {
+    return isNotStarted ? ['markDone'] : ['markDone', 'markNotDone'];
+  }
+  if (char === inProgressChar) {
     return ['continue', 'markDone', 'markNotStarted'];
   }
-  if (char === stateEngine.getDefaultChar()) {
-    return ['start', 'markDone'];
-  }
-  return ['markDone', 'markNotStarted'];
+  return isNotStarted ? ['start', 'markDone'] : ['markDone', 'markNotStarted'];
 }
 
 export class TaskActionCommands {
@@ -79,6 +86,13 @@ export class TaskActionCommands {
         : action === 'markDone'
         ? stateEngine.getDoneChar()
         : stateEngine.getDefaultChar();
+
+    if (targetChar === undefined) {
+      vscode.window.showWarningMessage(
+        `Markdown Tasks: The ${stateEngine.getActiveTemplate().name} state template has no in-progress state, so tasks cannot be started.`
+      );
+      return;
+    }
 
     // Nothing to change when the task is already as wanted
     if (task.char === targetChar) {

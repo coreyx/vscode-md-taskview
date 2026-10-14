@@ -187,9 +187,13 @@ export class StateTemplateEngine {
     return this.currentTemplate.defaultState ?? ' ';
   }
 
-  /** Bracket character of a started task: the template's in_progress state, or '/' when it has none. */
-  public getInProgressChar(): string {
-    return this.currentTemplate.states.find((s) => s.id === 'in_progress')?.char ?? '/';
+  /**
+   * Bracket character of a started task: the template's in_progress state, or else the state it maps '/' to.
+   * Undefined when the template has neither, as with Standard (GFM), so tasks cannot be started.
+   */
+  public getInProgressChar(): string | undefined {
+    const states = this.currentTemplate.states;
+    return (states.find((s) => s.id === 'in_progress') ?? states.find((s) => s.char === '/'))?.char;
   }
 
   /** Bracket character of a done task: the template's first completed state, or 'x' when it has none. */

@@ -1,45 +1,38 @@
-# Release Notes - v0.1.13
+# Release Notes - v0.1.14
 
 ## VS Code Markdown Task View (`vscode-md-taskview`)
 
-Release **v0.1.13** adds clickable actions above each task in the editor and a rotating spinner for tasks that are in progress.
+Release **v0.1.14** makes the clickable task actions match the Standard (GFM) template, which has no in-progress state.
 
 ---
 
-## 🛠️ What's New
+## 🛠️ What's Fixed
 
-### ▶️ Clickable Task Actions
-- **Actions Above Each Task:** When a task file is open in the text editor, each task shows clickable actions matched to its state:
-  - **Not started:** `Start | Mark done`
-  - **Started:** `Continue | Mark done | Mark not started`
-  - **Done:** `Mark not done`
-- **What They Do:** **Start** marks the task in progress (`[/]`), **Continue** opens the task in the editor, and the mark actions change only the task's checkbox.
-- **Also in the Tree View:** The same actions are in each task's right-click menu, and are available as commands (e.g. `Start Task`, `Mark Task Done`) that act on the task under the cursor.
-- **Optional:** Turn the editor actions off with `mdTaskView.showTaskActions`. They are CodeLens, so they need `editor.codeLens` enabled and do not appear in Markdown Preview.
+### ✅ Task Actions Under Standard (GFM)
+- **No More Start:** With `mdTaskView.stateTemplate` set to **Standard (GFM)**, tasks no longer offer `Start`, `Continue` or `Mark not started`. Previously `Start` wrote `[/]`, which GFM does not define and the tree showed as an unknown custom state.
+- **Two Actions Only:**
+  - **Unchecked `[ ]`:** `Mark done`
+  - **Checked `[x]`:** `Mark not done`
+  - **Any other marker (e.g. a leftover `[/]`):** `Mark done | Mark not done`
+- **Everywhere:** The editor actions and each task's right-click menu in the tree view follow the same rule. The `Start Task` command changes nothing under Standard (GFM) and says why.
 
-### 🔄 In-Progress Spinner
-- **Rotating Spinner:** In-progress tasks display a rotating spinner in the tree view.
-- **Respects Reduced Motion:** A static circular arrow icon is shown instead when `mdTaskView.animateTaskIcons` is disabled or VS Code's `accessibility.reducedMotion` is `on`.
-- **Custom Templates:** Any state in a custom `*.jsonc` template can opt in with `"animatedIcon": "loading~spin"`.
-
-> **Note:** The in-progress state and its spinner belong to the **Obsidian Tasks** template (`mdTaskView.stateTemplate`). Under **Standard (GFM)**, which has only `[ ]` and `[x]`, a started task (`[/]`) appears as a custom state.
-
-### 🧰 Development
-- **pnpm:** The project now builds with pnpm (`pnpm install`, `pnpm run package:vsix`).
+### 💎 Other Templates Are Unchanged
+- **Obsidian Tasks** keeps the full set: `Start | Mark done`, `Continue | Mark done | Mark not started`, and `Mark not done`.
+- **Custom templates** offer `Start` and `Continue` when they define an in-progress state (a state with id `in_progress`, or one mapped to `[/]`).
 
 ---
 
 ## 📦 Installation
 
-Download the attached `vscode-md-taskview-0.1.13.vsix` asset below and install it into VS Code:
+Download the attached `vscode-md-taskview-0.1.14.vsix` asset below and install it into VS Code:
 
 ### Option A: Via Command Line
 ```bash
-code --install-extension vscode-md-taskview-0.1.13.vsix
+code --install-extension vscode-md-taskview-0.1.14.vsix
 ```
 
 ### Option B: Via VS Code Interface
 1. Open the **Extensions View** in VS Code (`Ctrl+Shift+X` / `Cmd+Shift+X`).
 2. Click the **`...` (Views and More Actions)** menu icon at the top-right corner.
 3. Select **Install from VSIX...**
-4. Select the downloaded `vscode-md-taskview-0.1.13.vsix` file.
+4. Select the downloaded `vscode-md-taskview-0.1.14.vsix` file.

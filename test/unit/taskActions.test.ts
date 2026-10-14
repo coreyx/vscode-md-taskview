@@ -67,11 +67,29 @@ describe('getTaskActions', () => {
     expect(getTaskActions('~')).toEqual(['markDone', 'markNotStarted']);
   });
 
-  it('treats [/] as started under the Standard (GFM) template, which has no in-progress state', () => {
+  it('offers only Mark done and Mark not done under the Standard (GFM) template, which has no in-progress state', () => {
     useTemplate(STANDARD_TEMPLATE);
+    expect(getTaskActions(' ')).toEqual(['markDone']);
+    expect(getTaskActions('x')).toEqual(['markNotDone']);
+    expect(getTaskActions('X')).toEqual(['markNotDone']);
+    // A marker GFM does not define can be set to either end
+    expect(getTaskActions('/')).toEqual(['markDone', 'markNotDone']);
+    expect(getTaskActions('?')).toEqual(['markDone', 'markNotDone']);
+  });
+
+  it('treats [/] as started in a custom template that maps it under another id', () => {
+    useTemplate({
+      name: 'Custom',
+      description: '',
+      defaultState: ' ',
+      states: [
+        { char: ' ', id: 'todo', label: 'To Do', icon: 'circle-large-outline' },
+        { char: '/', id: 'progress', label: 'In Progress', icon: 'sync' },
+        { char: 'x', id: 'done', label: 'Done', icon: 'pass-filled', countsAsCompleted: true },
+      ],
+    });
     expect(getTaskActions(' ')).toEqual(['start', 'markDone']);
     expect(getTaskActions('/')).toEqual(['continue', 'markDone', 'markNotStarted']);
-    expect(getTaskActions('x')).toEqual(['markNotDone']);
   });
 
   it("uses a custom template's own in-progress and done characters", () => {
@@ -133,6 +151,18 @@ describe('TaskCodeLensProvider', () => {
     expect(lenses.length).toBeGreaterThan(0);
   });
 
+  it('offers no Start, Continue or Mark not started under the Standard (GFM) template', () => {
+    useTemplate(STANDARD_TEMPLATE);
+    const lenses = providerFor(fileUri.fsPath).provideCodeLenses(document);
+    expect(titlesByLine(lenses)).toEqual({
+      1: ['Mark done'],
+      2: ['Mark done', 'Mark not done'],
+      3: ['Mark not done'],
+      4: ['Mark not done'],
+      5: ['Mark done', 'Mark not done'],
+    });
+  });
+
   it('offers nothing in a markdown file that is not a task file', () => {
     expect(providerFor('/workspace/spec/other/tasks.md').provideCodeLenses(document)).toEqual([]);
   });
@@ -184,6 +214,23 @@ describe('TaskActionCommands', () => {
   it('changes nothing when the task is already as wanted', async () => {
     await TaskActionCommands.run('start', { uri: fileUri, line: 2 });
     expect(appliedEdits).toEqual([]);
+  });
+
+  it('Start changes nothing and says why under the Standard (GFM) template', async () => {
+    useTemplate(STANDARD_TEMPLATE);
+    await TaskActionCommands.run('start', { uri: fileUri, line: 1 });
+    expect(appliedEdits).toEqual([]);
+    expect(lastShownWarningMessage).toContain('has no in-progress state');
+  });
+
+  it('Mark done and Mark not done work under the Standard (GFM) template', async () => {
+    useTemplate(STANDARD_TEMPLATE);
+    await TaskActionCommands.run('markDone', { uri: fileUri, line: 1 });
+    expect(lastReplacement()).toEqual({ line: 1, col: 3, text: 'x' });
+
+    resetAppliedEdits();
+    await TaskActionCommands.run('markNotDone', { uri: fileUri, line: 2 });
+    expect(lastReplacement()).toEqual({ line: 2, col: 3, text: ' ' });
   });
 
   it('Continue opens the task in the text editor without changing it', async () => {

@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.14] - 2026-10-13
+
+### Fixed
+- **Task Actions Under Standard (GFM):** The Standard (GFM) template has no in-progress state, so its tasks no longer offer `Start`, `Continue` or `Mark not started`. Unchecked tasks offer `Mark done` and checked tasks offer `Mark not done`; a task whose marker GFM does not define (such as `[/]`) offers both. Previously `Start` wrote `[/]`, which the template displayed as an unknown custom state. The `Start Task` command now changes nothing under such a template and says why.
+
+### Changed
+- **Task Actions Follow the Active Template:** The actions offered depend on whether the active state template has an in-progress state (a state with id `in_progress`, or one mapped to `[/]`), so Obsidian Tasks and custom templates that define one keep the full `Start` / `Continue` set.
+
 ## [0.1.13] - 2026-10-13
 
 ### Added
