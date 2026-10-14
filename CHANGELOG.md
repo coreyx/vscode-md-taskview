@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.17] - 2026-10-14
+
+### Changed
+- **Milestone Keyword Must Start the Heading:** A heading is now a milestone only when its text starts with a milestone keyword (after the `#` marks and bold/italic markers are removed). A keyword later in the heading no longer counts, so notes, anchors and bookmark headings such as `## Notes on Milestone 1` keep the bookmark icon. Anything in front of the keyword, including numbering (`## 1. Milestone`) or an emoji, also prevents the match.
+- **Default Milestone Keywords:** `mdTaskView.milestoneKeywords` now defaults to `["Milestone"]` only. `Release`, `Alpha` and `Beta` are no longer milestone keywords unless added back to the setting. A list you have set yourself is unchanged.
+- **No Plural Matching:** Keywords no longer match in the plural, so overview headings such as `## Milestones` are normal sections. Matching remains case-insensitive and whole-word.
+
 ## [0.1.16] - 2026-10-14
 
 ### Fixed

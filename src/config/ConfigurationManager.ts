@@ -64,7 +64,7 @@ export class ConfigurationManager {
       hideCompletedByDefault: config?.get<boolean>('hideCompletedByDefault', false) ?? false,
       useH1AsGroupName: config?.get<boolean>('useH1AsGroupName', false) ?? false,
       openEditor: config?.get<'auto' | 'textEditor' | 'preview'>('openEditor', 'auto') ?? 'auto',
-      milestoneKeywords: config?.get<string[]>('milestoneKeywords', ['Milestone', 'Release', 'Alpha', 'Beta']) ?? ['Milestone', 'Release', 'Alpha', 'Beta'],
+      milestoneKeywords: config?.get<string[]>('milestoneKeywords', ['Milestone']) ?? ['Milestone'],
       animateTaskIcons: config?.get<boolean>('animateTaskIcons', true) ?? true,
       showTaskActions: config?.get<boolean>('showTaskActions', true) ?? true,
     };
