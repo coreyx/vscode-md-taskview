@@ -38,7 +38,7 @@ Designed for modern spec-driven workflows and supercharged with **Obsidian Tasks
   - **Start** marks the task in progress (`[/]`), and **Continue** opens the task in the editor. The same actions are in each task's right-click menu in the tree view.
   - The **Standard (GFM)** template has no in-progress state, so its tasks offer only **Mark done** and **Mark not done**.
   - Turn the editor actions off with `mdTaskView.showTaskActions`. They are CodeLens, so they also need `editor.codeLens` enabled and do not appear in Markdown Preview.
-  - **Animated In-Progress Spinner:** In-progress tasks display a rotating spinner. When `mdTaskView.animateTaskIcons` is disabled or VS Code's `accessibility.reducedMotion` is `on`, a static circular arrow icon is shown instead.
+  - **Animated In-Progress Spinner:** In-progress tasks display a rotating spinner. When `mdTaskView.animateTaskIcons` is disabled or VS Code's `workbench.reduceMotion` is `on`, a static circular arrow icon is shown instead.
 - **🛠️ Extensible `*.jsonc` State Template System:**
   - Define custom states, characters, icons, and transition cycles using commented JSON (`*.jsonc`) files.
 - **🔍 Productivity View Controls:**
@@ -67,13 +67,13 @@ You can package and install the extension directly from the repository:
 2. **Install into VS Code:**
    - **Via Terminal / CLI:**
      ```bash
-     code --install-extension vscode-md-taskview-0.1.15.vsix
+     code --install-extension vscode-md-taskview-0.1.16.vsix
      ```
    - **Via VS Code Interface:**
      1. Open the **Extensions View** (`Ctrl+Shift+X` on Windows/Linux, `Cmd+Shift+X` on macOS).
      2. Click the **`...` (Views and More Actions)** menu icon at the top right of the Extensions panel.
      3. Select **Install from VSIX...**
-     4. Select the generated `vscode-md-taskview-0.1.15.vsix` file.
+     4. Select the generated `vscode-md-taskview-0.1.16.vsix` file.
 
 ### Option 2: Run in Development Mode (F5)
 
@@ -94,11 +94,11 @@ To run your local build directly in your regular VS Code without packaging:
 
 - **Windows (PowerShell as Administrator or with Developer Mode):**
   ```powershell
-  New-Item -ItemType SymbolicLink -Path "$HOME\.vscode\extensions\coreyx.vscode-md-taskview-0.1.15" -Target (Get-Location)
+  New-Item -ItemType SymbolicLink -Path "$HOME\.vscode\extensions\coreyx.vscode-md-taskview-0.1.16" -Target (Get-Location)
   ```
 - **macOS / Linux:**
   ```bash
-  ln -s "$(pwd)" "$HOME/.vscode/extensions/coreyx.vscode-md-taskview-0.1.15"
+  ln -s "$(pwd)" "$HOME/.vscode/extensions/coreyx.vscode-md-taskview-0.1.16"
   ```
 - Reload VS Code (`Ctrl+Shift+P` / `Cmd+Shift+P` → `Developer: Reload Window`).
 
@@ -181,7 +181,7 @@ Customize behavior via VS Code Settings (`Ctrl+,` $\rightarrow$ search `Markdown
 | `mdTaskView.useH1AsGroupName` | `boolean` | `false` | Use the first level-1 heading in `tasks.md` as the group title instead of the folder name. |
 | `mdTaskView.milestoneKeywords` | `array` | `["Milestone", "Release", "Alpha", "Beta"]` | Keywords used to detect milestone headings in markdown files. Headings with these keywords display goalpost flag icons; other headings display bookmark icons. |
 | `mdTaskView.showTaskActions` | `boolean` | `true` | Show clickable actions (Start, Continue, Mark done, Mark not done, Mark not started) above each task when a task file is open in the text editor. |
-| `mdTaskView.animateTaskIcons` | `boolean` | `true` | Show a rotating spinner for in-progress tasks. When disabled, or when `accessibility.reducedMotion` is `on`, a static circular arrow icon is shown instead. |
+| `mdTaskView.animateTaskIcons` | `boolean` | `true` | Show a rotating spinner for in-progress tasks. When disabled, or when `workbench.reduceMotion` is `on`, a static circular arrow icon is shown instead. |
 
 ---
 

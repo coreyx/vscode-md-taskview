@@ -2,7 +2,7 @@
   "name": "vscode-md-taskview",
   "displayName": "Markdown Tasks View",
   "description": "Visual, hierarchical tree view for Markdown specification task lists (GFM & Obsidian Tasks)",
-  "version": "0.1.15",
+  "version": "0.1.16",
   "publisher": "coreyx",
   "author": "Corey Struzan",
   "license": "MIT",
@@ -394,7 +394,7 @@
         "mdTaskView.animateTaskIcons": {
           "type": "boolean",
           "default": true,
-          "markdownDescription": "Show a rotating spinner for in-progress tasks. When disabled, or when `#accessibility.reducedMotion#` is `on`, a static circular arrow icon is shown instead."
+          "markdownDescription": "Show a rotating spinner for in-progress tasks. When disabled, or when `#workbench.reduceMotion#` is `on`, a static circular arrow icon is shown instead."
         }
       }
     }

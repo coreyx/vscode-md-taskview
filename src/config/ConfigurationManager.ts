@@ -27,7 +27,7 @@ export class ConfigurationManager {
     if (context && vscode.workspace?.onDidChangeConfiguration) {
       context.subscriptions.push(
         vscode.workspace.onDidChangeConfiguration((e) => {
-          if (e.affectsConfiguration('mdTaskView') || e.affectsConfiguration('accessibility.reducedMotion')) {
+          if (e.affectsConfiguration('mdTaskView') || e.affectsConfiguration('workbench.reduceMotion')) {
             this._onDidChangeConfig.fire(this.getConfig());
           }
         })
@@ -72,15 +72,15 @@ export class ConfigurationManager {
 
   /**
    * Whether animated task icons may be shown. Motion is off when mdTaskView.animateTaskIcons is disabled
-   * or VS Code's accessibility.reducedMotion is 'on' ('auto' follows the OS, which extensions cannot read).
+   * or VS Code's workbench.reduceMotion is 'on' ('auto' follows the OS, which extensions cannot read).
    */
   public isMotionEnabled(): boolean {
     if (!this.getConfig().animateTaskIcons) {
       return false;
     }
-    const reducedMotion = vscode.workspace?.getConfiguration
-      ? vscode.workspace.getConfiguration('accessibility').get<string>('reducedMotion', 'auto')
+    const reduceMotion = vscode.workspace?.getConfiguration
+      ? vscode.workspace.getConfiguration('workbench').get<string>('reduceMotion', 'auto')
       : 'auto';
-    return reducedMotion !== 'on';
+    return reduceMotion !== 'on';
   }
 }

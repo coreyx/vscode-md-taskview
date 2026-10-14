@@ -5,6 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.16] - 2026-10-14
+
+### Fixed
+- **Reduced Motion Setting Name:** The in-progress spinner now stops when VS Code's `workbench.reduceMotion` is `on`. Version 0.1.13 read `accessibility.reducedMotion`, a setting VS Code does not have, so turning on reduced motion never stopped the spinner. When `workbench.reduceMotion` is `auto` (the default), VS Code follows the system preference without exposing it to extensions, so the spinner keeps running; turn it off with `mdTaskView.animateTaskIcons`.
+
 ## [0.1.15] - 2026-10-13
 
 ### Changed

@@ -187,15 +187,15 @@ describe('TaskTreeDataProvider In-Progress Task Icons', () => {
     expect((icon as any).color.id).toBe('charts.blue');
   });
 
-  it('should display a static circular arrow icon when accessibility.reducedMotion is on', () => {
-    setMockConfiguration('accessibility', { reducedMotion: 'on' });
+  it('should display a static circular arrow icon when workbench.reduceMotion is on', () => {
+    setMockConfiguration('workbench', { reduceMotion: 'on' });
     const icon = new TaskTreeDataProvider().getTreeItem(inProgressTask).iconPath as vscode.ThemeIcon;
     expect(icon.id).toBe('sync');
   });
 
-  it('should keep the spinner when accessibility.reducedMotion is off or auto', () => {
-    for (const reducedMotion of ['off', 'auto']) {
-      setMockConfiguration('accessibility', { reducedMotion });
+  it('should keep the spinner when workbench.reduceMotion is off or auto', () => {
+    for (const reduceMotion of ['off', 'auto']) {
+      setMockConfiguration('workbench', { reduceMotion });
       const icon = new TaskTreeDataProvider().getTreeItem(inProgressTask).iconPath as vscode.ThemeIcon;
       expect(icon.id).toBe('loading~spin');
     }
