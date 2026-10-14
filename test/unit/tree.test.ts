@@ -41,6 +41,12 @@ describe('isMilestoneHeading', () => {
     expect(isMilestoneHeading('Betas', keywords)).toBe(false);
   });
 
+  it('treats an underscore as part of a word', () => {
+    expect(isMilestoneHeading('Milestone_notes', keywords)).toBe(false);
+    expect(isMilestoneHeading('release_notes', keywords)).toBe(false);
+    expect(isMilestoneHeading('Milestone_1', keywords)).toBe(false);
+  });
+
   it('does not falsely match normal headings or partial words', () => {
     expect(isMilestoneHeading('Database Setup', keywords)).toBe(false);
     expect(isMilestoneHeading('Architecture & Design', keywords)).toBe(false);

@@ -143,6 +143,22 @@ Some introductory paragraph text without tasks.
     expect(h1.tasks[8].cleanText).toBe('Maintain snake_case_identifier and math 2 * 3 = 6 intact');
   });
 
+  it('should keep underscores inside words and remove only paired emphasis markers', () => {
+    const strip = (text: string) => MarkdownASTParser.stripMarkdownFormatting(text);
+    expect(strip('release_notes')).toBe('release_notes');
+    expect(strip('Milestone_notes')).toBe('Milestone_notes');
+    expect(strip('Mile__stone__ 1')).toBe('Mile__stone__ 1');
+    expect(strip('Mile_stone_ 1')).toBe('Mile_stone_ 1');
+    expect(strip('foo__bar__baz')).toBe('foo__bar__baz');
+    expect(strip('__init__')).toBe('init');
+    expect(strip('Mile**stone** 1')).toBe('Milestone 1');
+    expect(strip('_Milestone_ 1')).toBe('Milestone 1');
+    expect(strip('(_Milestone_) 1')).toBe('(Milestone) 1');
+    expect(strip('*Milestone 1')).toBe('*Milestone 1');
+    expect(strip('_Milestone 1')).toBe('_Milestone 1');
+    expect(strip('** Milestone** 1')).toBe('** Milestone** 1');
+  });
+
   it('should generate heading slugs and associate parentHeadingSlug on child tasks', () => {
     const markdown = `
 # Milestone 1: Project Foundation & Extension Scaffolding (MVP - Part 1)

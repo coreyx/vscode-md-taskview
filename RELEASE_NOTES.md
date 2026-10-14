@@ -1,36 +1,35 @@
-# Release Notes - v0.1.17
+# Release Notes - v0.1.18
 
 ## VS Code Markdown Task View (`vscode-md-taskview`)
 
-Release **v0.1.17** makes milestone detection stricter, so headings that only mention a milestone are no longer shown as one.
+Release **v0.1.18** fixes how underscores are handled in milestone detection and in tree view labels.
 
 ---
 
-## 🛠️ What's Changed
+## 🛠️ What's Fixed
 
-### ⛳ Milestones Are Headings That Start With "Milestone"
-- **Keyword at the Start:** A heading is a milestone only when its text starts with the keyword, e.g. `## Milestone 1: Setup`. Notes, anchors and bookmark headings that mention it later, such as `## Notes on Milestone 1`, keep the bookmark icon.
-- **Nothing in Front:** Numbering or an emoji before the keyword (`## 1. Milestone`, `## 🚀 Milestone 1`) also means the heading is not a milestone. Bold or italic around the keyword is fine.
-- **No Plurals:** `## Milestones` is now a normal section, since it is usually an overview rather than a milestone itself.
-- **Unchanged:** Matching is still case-insensitive (`## milestone 2` counts) and whole-word only (`## Milestone-1 checks` counts, `## Milestoneish` does not).
+### ⛳ `Milestone_notes` Is Not a Milestone
+- **Underscore Is Part of the Word:** Milestone matching now treats `_` like a letter or digit, so a heading such as `## Milestone_notes` or `## Milestone_1` is a normal section rather than a milestone.
+- **Unchanged:** `## Milestone 1`, `## Milestone-1 checks` and `## **Milestone** 1` are still milestones.
 
-### 🔑 Default Keyword List Is Now Just "Milestone"
-- **Default:** `mdTaskView.milestoneKeywords` now defaults to `["Milestone"]`. Headings starting with `Release`, `Alpha` or `Beta` are no longer milestones by default.
-- **Bring Them Back:** Add any keywords you want to the `mdTaskView.milestoneKeywords` setting. If you had already set your own list, it is unchanged.
+### 🏷️ Underscores Inside Words Are Shown as Written
+- **The Bug:** Labels with underscores doubled inside a word were mangled: `Mile__stone__` appeared as `Mile_stone_`.
+- **The Fix:** Underscore emphasis is now removed only when it starts and ends at a word edge, the same way Markdown renders it. `Mile__stone__` and `foo__bar__baz` are shown exactly as written.
+- **Unchanged:** `snake_case` names stay intact, and paired emphasis such as `_Milestone_`, `__Milestone__` or `**Milestone**` is still removed from labels.
 
 ---
 
 ## 📦 Installation
 
-Download the attached `vscode-md-taskview-0.1.17.vsix` asset below and install it into VS Code:
+Download the attached `vscode-md-taskview-0.1.18.vsix` asset below and install it into VS Code:
 
 ### Option A: Via Command Line
 ```bash
-code --install-extension vscode-md-taskview-0.1.17.vsix
+code --install-extension vscode-md-taskview-0.1.18.vsix
 ```
 
 ### Option B: Via VS Code Interface
 1. Open the **Extensions View** in VS Code (`Ctrl+Shift+X` / `Cmd+Shift+X`).
 2. Click the **`...` (Views and More Actions)** menu icon at the top-right corner.
 3. Select **Install from VSIX...**
-4. Select the downloaded `vscode-md-taskview-0.1.17.vsix` file.
+4. Select the downloaded `vscode-md-taskview-0.1.18.vsix` file.

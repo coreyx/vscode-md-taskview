@@ -9,7 +9,8 @@ import { getTaskActions } from '../commands/TaskActionCommands.js';
 
 /**
  * Whether a heading is a milestone: its text starts with one of the keywords as a whole word
- * (case-insensitive). A keyword later in the heading, or in the plural, does not count, so notes,
+ * (case-insensitive), where letters, digits and '_' all belong to a word. A keyword later in the
+ * heading, in the plural, or inside an identifier (Milestone_notes) does not count, so notes,
  * bookmarks and overview sections ("Milestones") can mention milestones without becoming one.
  */
 export function isMilestoneHeading(label: string, keywords: string[]): boolean {
@@ -19,7 +20,7 @@ export function isMilestoneHeading(label: string, keywords: string[]): boolean {
     const trimmed = kw.trim().toLowerCase();
     if (!trimmed) return false;
     const escaped = trimmed.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    const pattern = new RegExp(`^${escaped}([^a-zA-Z0-9]|$)`, 'i');
+    const pattern = new RegExp(`^${escaped}([^a-zA-Z0-9_]|$)`, 'i');
     return pattern.test(normalizedLabel);
   });
 }

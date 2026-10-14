@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.18] - 2026-10-14
+
+### Fixed
+- **Underscore Is Part of a Word in Milestone Matching:** The whole-word check now treats `_` like a letter or digit, so headings such as `## Milestone_notes` or `## Milestone_1` are no longer milestones.
+- **Underscores Doubled Inside a Word in Labels:** Labels with underscores doubled inside a word, such as `Mile__stone__` or `foo__bar__baz`, are now shown as written. Previously the emphasis cleanup treated `_` as punctuation and turned `Mile__stone__` into `Mile_stone_`. Underscore emphasis is now removed only when it starts and ends at a word edge, matching how Markdown renders it; `snake_case` names and paired emphasis such as `_Milestone_` or `__Milestone__` are handled as before.
+
 ## [0.1.17] - 2026-10-14
 
 ### Changed
