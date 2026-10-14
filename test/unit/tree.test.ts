@@ -177,14 +177,14 @@ describe('TaskTreeDataProvider In-Progress Task Icons', () => {
   it('should display a rotating spinner for in-progress tasks by default', () => {
     const icon = new TaskTreeDataProvider().getTreeItem(inProgressTask).iconPath as vscode.ThemeIcon;
     expect(icon.id).toBe('loading~spin');
-    expect((icon as any).color.id).toBe('charts.yellow');
+    expect((icon as any).color.id).toBe('charts.blue');
   });
 
   it('should display a static circular arrow icon when mdTaskView.animateTaskIcons is disabled', () => {
     setMockConfiguration('mdTaskView', { animateTaskIcons: false });
     const icon = new TaskTreeDataProvider().getTreeItem(inProgressTask).iconPath as vscode.ThemeIcon;
     expect(icon.id).toBe('sync');
-    expect((icon as any).color.id).toBe('charts.yellow');
+    expect((icon as any).color.id).toBe('charts.blue');
   });
 
   it('should display a static circular arrow icon when accessibility.reducedMotion is on', () => {

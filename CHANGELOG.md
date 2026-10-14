@@ -5,6 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.15] - 2026-10-13
+
+### Changed
+- **In-Progress Task Color:** In-progress tasks in the Obsidian Tasks template are now displayed in blue (`charts.blue`) instead of yellow (`charts.yellow`), for both the rotating spinner and the static circular arrow icon. Custom `*.jsonc` templates keep the color they specify.
+
 ## [0.1.14] - 2026-10-13
 
 ### Fixed

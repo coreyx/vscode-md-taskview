@@ -58,7 +58,7 @@ export const OBSIDIAN_TEMPLATE: StateTemplate = {
       label: 'In Progress',
       icon: 'sync',
       animatedIcon: 'loading~spin',
-      color: 'charts.yellow',
+      color: 'charts.blue',
       strikethrough: false,
       countsAsCompleted: false,
       nextState: 'x',
