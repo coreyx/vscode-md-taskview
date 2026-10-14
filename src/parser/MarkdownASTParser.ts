@@ -162,6 +162,28 @@ export class MarkdownASTParser {
     };
   }
 
+  /**
+   * Lists every task of a parsed spec, sub-tasks included, in no particular order.
+   */
+  public static collectTasks(spec: SpecGroup): TaskNode[] {
+    const tasks: TaskNode[] = [];
+    const visitTasks = (list: TaskNode[]): void => {
+      for (const task of list) {
+        tasks.push(task);
+        visitTasks(task.subTasks);
+      }
+    };
+    const visitHeadings = (list: HeadingNode[]): void => {
+      for (const heading of list) {
+        visitTasks(heading.tasks);
+        visitHeadings(heading.children);
+      }
+    };
+    visitTasks(spec.rootTasks);
+    visitHeadings(spec.headings);
+    return tasks;
+  }
+
   private static calculateIndentation(indentStr: string): number {
     let count = 0;
     for (const ch of indentStr) {

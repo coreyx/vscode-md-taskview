@@ -4,6 +4,8 @@ import { SpecDiscoveryService } from './services/SpecDiscoveryService.js';
 import { TaskTreeDataProvider } from './views/TaskTreeDataProvider.js';
 import { NavigationCommands } from './commands/NavigationCommands.js';
 import { StateCommands } from './commands/StateCommands.js';
+import { TASK_ACTION_COMMANDS, TaskAction, TaskActionCommands, TaskOrigin } from './commands/TaskActionCommands.js';
+import { TaskCodeLensProvider } from './views/TaskCodeLensProvider.js';
 import { FileSystemWatcherService } from './services/FileSystemWatcherService.js';
 import { StateTemplateEngine } from './templates/StateTemplateEngine.js';
 import { TaskTreeNode } from './models/types.js';
@@ -92,6 +94,9 @@ export async function activate(context: vscode.ExtensionContext) {
       vscode.commands.executeCommand('setContext', 'mdTaskView.isCollapsed', isCollapsed);
     }
   });
+
+  // Clickable task actions above each task in the text editor
+  const codeLensProvider = new TaskCodeLensProvider(treeDataProvider, configManager);
 
   // 4. Start Live Filesystem & Buffer Watcher
   const watcherService = new FileSystemWatcherService(treeDataProvider, configManager);
@@ -195,6 +200,13 @@ export async function activate(context: vscode.ExtensionContext) {
     vscode.commands.registerCommand('mdTaskView.setStateImportant', async (node?: TaskTreeNode) => {
       await StateCommands.setTaskState(node, '!');
     }),
+    ...(Object.entries(TASK_ACTION_COMMANDS) as [TaskAction, string][]).map(([action, command]) =>
+      vscode.commands.registerCommand(command, async (origin?: TaskOrigin) => {
+        await TaskActionCommands.run(action, origin);
+      })
+    ),
+    vscode.languages.registerCodeLensProvider({ language: 'markdown' }, codeLensProvider),
+    treeDataProvider.onDidChangeTreeData(() => codeLensProvider.refresh()),
     vscode.commands.registerCommand('mdTaskView.toggleFilterCompleted', () => {
       const active = treeDataProvider.toggleFilterCompleted();
       vscode.window.showInformationMessage(`Markdown Tasks: Filter completed tasks ${active ? 'enabled' : 'disabled'}.`);

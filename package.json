@@ -2,7 +2,7 @@
   "name": "vscode-md-taskview",
   "displayName": "Markdown Tasks View",
   "description": "Visual, hierarchical tree view for Markdown specification task lists (GFM & Obsidian Tasks)",
-  "version": "0.1.12",
+  "version": "0.1.13",
   "publisher": "coreyx",
   "author": "Corey Struzan",
   "license": "MIT",
@@ -120,6 +120,31 @@
         "icon": "$(gear)"
       },
       {
+        "command": "mdTaskView.startTask",
+        "title": "Start Task",
+        "icon": "$(play)"
+      },
+      {
+        "command": "mdTaskView.continueTask",
+        "title": "Continue Task",
+        "icon": "$(play)"
+      },
+      {
+        "command": "mdTaskView.markTaskDone",
+        "title": "Mark Task Done",
+        "icon": "$(pass-filled)"
+      },
+      {
+        "command": "mdTaskView.markTaskNotDone",
+        "title": "Mark Task Not Done",
+        "icon": "$(circle-large-outline)"
+      },
+      {
+        "command": "mdTaskView.markTaskNotStarted",
+        "title": "Mark Task Not Started",
+        "icon": "$(circle-large-outline)"
+      },
+      {
         "command": "mdTaskView.setStateNotStarted",
         "title": "Not Started [ ]",
         "icon": "$(circle-large-outline)"
@@ -187,22 +212,47 @@
       "view/item/context": [
         {
           "command": "mdTaskView.toggleState",
-          "when": "view == mdTaskView.tasksView && viewItem == taskItem",
+          "when": "view == mdTaskView.tasksView && viewItem =~ /^taskItem\\b/",
           "group": "inline"
         },
         {
+          "command": "mdTaskView.startTask",
+          "when": "view == mdTaskView.tasksView && viewItem =~ /\\bstart\\b/",
+          "group": "0_actions@1"
+        },
+        {
+          "command": "mdTaskView.continueTask",
+          "when": "view == mdTaskView.tasksView && viewItem =~ /\\bcontinue\\b/",
+          "group": "0_actions@1"
+        },
+        {
+          "command": "mdTaskView.markTaskDone",
+          "when": "view == mdTaskView.tasksView && viewItem =~ /\\bmarkDone\\b/",
+          "group": "0_actions@2"
+        },
+        {
+          "command": "mdTaskView.markTaskNotDone",
+          "when": "view == mdTaskView.tasksView && viewItem =~ /\\bmarkNotDone\\b/",
+          "group": "0_actions@3"
+        },
+        {
+          "command": "mdTaskView.markTaskNotStarted",
+          "when": "view == mdTaskView.tasksView && viewItem =~ /\\bmarkNotStarted\\b/",
+          "group": "0_actions@4"
+        },
+        {
           "submenu": "mdTaskView.taskStateSubmenu",
-          "when": "view == mdTaskView.tasksView && viewItem == taskItem",
+          "when": "view == mdTaskView.tasksView && viewItem =~ /^taskItem\\b/",
           "group": "1_state"
         },
         {
           "command": "mdTaskView.expandSection",
-          "when": "view == mdTaskView.tasksView && (viewItem == specGroup || viewItem == heading || viewItem == taskItem)",
+          "when": "view == mdTaskView.tasksView && (viewItem == specGroup || viewItem == heading || viewItem =~ /^taskItem\\b/)",
           "group": "2_expansion@1"
         },
         {
           "command": "mdTaskView.collapseSection",
-          "when": "view == mdTaskView.tasksView && (viewItem == specGroup || viewItem == heading || viewItem == taskItem)",
+          "when": "view == mdTaskView.tasksView && (viewItem == specGroup || viewItem == heading || viewItem =~ /^taskItem\\b/)",
           "group": "2_expansion@2"
         }
       ],
@@ -335,19 +385,30 @@
             "Beta"
           ],
           "description": "Keywords used to identify milestone headings in markdown files. Headings matching any of these keywords are treated as milestones and displayed with a goalpost flag icon."
+        },
+        "mdTaskView.showTaskActions": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show clickable actions (Start, Continue, Mark done, Mark not done, Mark not started) above each task when a task file is open in the text editor."
+        },
+        "mdTaskView.animateTaskIcons": {
+          "type": "boolean",
+          "default": true,
+          "markdownDescription": "Show a rotating spinner for in-progress tasks. When disabled, or when `#accessibility.reducedMotion#` is `on`, a static circular arrow icon is shown instead."
         }
       }
     }
   },
   "scripts": {
-    "vscode:prepublish": "npm run package",
+    "vscode:prepublish": "pnpm run package",
     "compile": "node esbuild.js",
     "watch": "node esbuild.js --watch",
     "typecheck": "tsc --noEmit",
     "test:unit": "vitest run",
     "package": "node esbuild.js --production",
-    "package:vsix": "npx @vscode/vsce package"
+    "package:vsix": "vsce package --no-dependencies"
   },
+  "packageManager": "pnpm@12.6.0",
   "dependencies": {
     "fast-glob": "^3.3.2",
     "jsonc-parser": "^3.2.1"

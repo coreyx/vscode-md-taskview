@@ -57,6 +57,7 @@ export const OBSIDIAN_TEMPLATE: StateTemplate = {
       id: 'in_progress',
       label: 'In Progress',
       icon: 'sync',
+      animatedIcon: 'loading~spin',
       color: 'charts.yellow',
       strikethrough: false,
       countsAsCompleted: false,
@@ -179,6 +180,21 @@ export class StateTemplateEngine {
     const currentState = this.getState(char);
     const nextChar = currentState.nextState ?? this.currentTemplate.defaultState;
     return this.getState(nextChar);
+  }
+
+  /** Bracket character of a task that is not started. */
+  public getDefaultChar(): string {
+    return this.currentTemplate.defaultState ?? ' ';
+  }
+
+  /** Bracket character of a started task: the template's in_progress state, or '/' when it has none. */
+  public getInProgressChar(): string {
+    return this.currentTemplate.states.find((s) => s.id === 'in_progress')?.char ?? '/';
+  }
+
+  /** Bracket character of a done task: the template's first completed state, or 'x' when it has none. */
+  public getDoneChar(): string {
+    return this.currentTemplate.states.find((s) => s.countsAsCompleted)?.char ?? 'x';
   }
 
   public getAllStates(): StateDefinition[] {

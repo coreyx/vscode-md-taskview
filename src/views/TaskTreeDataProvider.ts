@@ -5,6 +5,7 @@ import { SpecDiscoveryService } from '../services/SpecDiscoveryService.js';
 import { MarkdownASTParser } from '../parser/MarkdownASTParser.js';
 import { ConfigurationManager } from '../config/ConfigurationManager.js';
 import { StateTemplateEngine } from '../templates/StateTemplateEngine.js';
+import { getTaskActions } from '../commands/TaskActionCommands.js';
 
 export function isMilestoneHeading(label: string, keywords: string[]): boolean {
   if (!label || !keywords || keywords.length === 0) return false;
@@ -76,6 +77,14 @@ export class TaskTreeDataProvider implements vscode.TreeDataProvider<TaskTreeNod
     const parsed = MarkdownASTParser.parse(content, specName, fileUri, folderUri);
     this.specGroups.set(fileUri.fsPath, parsed);
     this._onDidChangeTreeData.fire();
+  }
+
+  public hasSpecFile(fileUri: vscode.Uri): boolean {
+    const target = fileUri.fsPath.toLowerCase();
+    for (const key of this.specGroups.keys()) {
+      if (key.toLowerCase() === target) return true;
+    }
+    return false;
   }
 
   public removeSpec(fileUri: vscode.Uri): void {
@@ -523,11 +532,14 @@ export class TaskTreeDataProvider implements vscode.TreeDataProvider<TaskTreeNod
 
         const item = new vscode.TreeItem(displayLabel, collapsibleState);
         item.id = `${element.id}#v${version}`;
-        item.contextValue = 'taskItem';
+        // Lists the actions the task offers so context menu entries can match on them
+        item.contextValue = ['taskItem', ...getTaskActions(element.char, stateEngine)].join(' ');
 
         // Set Icon & Color based on state definition
         const themeColor = stateDef.color ? new vscode.ThemeColor(stateDef.color) : undefined;
-        item.iconPath = new vscode.ThemeIcon(stateDef.icon, themeColor);
+        const iconId =
+          stateDef.animatedIcon && this.configManager.isMotionEnabled() ? stateDef.animatedIcon : stateDef.icon;
+        item.iconPath = new vscode.ThemeIcon(iconId, themeColor);
 
         // Tooltip with raw details and state description
         item.tooltip = new vscode.MarkdownString(`**[${element.char}] ${stateDef.label}**: ${element.cleanText}\n\n*Line ${element.line + 1}*`);

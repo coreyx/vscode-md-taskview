@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.13] - 2026-10-13
+
+### Added
+- **Clickable Task Actions in the Editor:** When a task file is open in the text editor, each task shows clickable CodeLens actions above it, chosen by the task's state: `Start | Mark done` for tasks not started, `Continue | Mark done | Mark not started` for started tasks, and `Mark not done` for completed tasks. Tasks in any other state offer `Mark done | Mark not started`. **Start** marks the task in progress (`[/]`), **Continue** opens the task in the editor, and the mark actions change only the task's bracket character.
+- **Task Actions in the Tree View Context Menu:** The same actions are offered in each task's right-click menu in the tree view, matched to the task's state.
+- **Task Action Commands:** Added `Start Task`, `Continue Task`, `Mark Task Done`, `Mark Task Not Done` and `Mark Task Not Started` commands, which act on the task under the cursor when run from the Command Palette or a keybinding.
+- **Show Task Actions Setting (`mdTaskView.showTaskActions`):** Toggles the editor actions (default: `true`).
+- **Animated In-Progress Spinner:** In-progress tasks display a rotating spinner (`$(loading~spin)`) in the tree view. When motion is off, a static circular arrow icon (`$(sync)`) is shown instead.
+- **Animate Task Icons Setting (`mdTaskView.animateTaskIcons`):** Turns the spinner off (default: `true`). The spinner is also turned off when VS Code's `accessibility.reducedMotion` is `on`.
+- **`animatedIcon` State Template Field:** Custom `*.jsonc` state templates can give any state an optional `animatedIcon` (e.g. `"loading~spin"`), shown instead of `icon` when motion is enabled.
+
+### Changed
+- **Package Manager:** The project now uses pnpm instead of npm (`pnpm-lock.yaml` replaces `package-lock.json`). Build and package with `pnpm install` and `pnpm run package:vsix`.
+
 ## [0.1.12] - 2026-10-06
 
 ### Fixed

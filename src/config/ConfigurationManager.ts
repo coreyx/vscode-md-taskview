@@ -14,6 +14,8 @@ export interface TaskViewConfig {
   useH1AsGroupName: boolean;
   openEditor: 'auto' | 'textEditor' | 'preview';
   milestoneKeywords: string[];
+  animateTaskIcons: boolean;
+  showTaskActions: boolean;
 }
 
 export class ConfigurationManager {
@@ -25,7 +27,7 @@ export class ConfigurationManager {
     if (context && vscode.workspace?.onDidChangeConfiguration) {
       context.subscriptions.push(
         vscode.workspace.onDidChangeConfiguration((e) => {
-          if (e.affectsConfiguration('mdTaskView')) {
+          if (e.affectsConfiguration('mdTaskView') || e.affectsConfiguration('accessibility.reducedMotion')) {
             this._onDidChangeConfig.fire(this.getConfig());
           }
         })
@@ -63,6 +65,22 @@ export class ConfigurationManager {
       useH1AsGroupName: config?.get<boolean>('useH1AsGroupName', false) ?? false,
       openEditor: config?.get<'auto' | 'textEditor' | 'preview'>('openEditor', 'auto') ?? 'auto',
       milestoneKeywords: config?.get<string[]>('milestoneKeywords', ['Milestone', 'Release', 'Alpha', 'Beta']) ?? ['Milestone', 'Release', 'Alpha', 'Beta'],
+      animateTaskIcons: config?.get<boolean>('animateTaskIcons', true) ?? true,
+      showTaskActions: config?.get<boolean>('showTaskActions', true) ?? true,
     };
+  }
+
+  /**
+   * Whether animated task icons may be shown. Motion is off when mdTaskView.animateTaskIcons is disabled
+   * or VS Code's accessibility.reducedMotion is 'on' ('auto' follows the OS, which extensions cannot read).
+   */
+  public isMotionEnabled(): boolean {
+    if (!this.getConfig().animateTaskIcons) {
+      return false;
+    }
+    const reducedMotion = vscode.workspace?.getConfiguration
+      ? vscode.workspace.getConfiguration('accessibility').get<string>('reducedMotion', 'auto')
+      : 'auto';
+    return reducedMotion !== 'on';
   }
 }

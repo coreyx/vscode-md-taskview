@@ -119,6 +119,29 @@ export class Selection {
 
 export enum TextEditorRevealType {
   InCenter = 2,
+  InCenterIfOutsideViewport = 3,
+}
+
+export class CodeLens {
+  constructor(public range: Range, public command?: any) {}
+}
+
+export class WorkspaceEdit {
+  replacements: { uri: any; range: Range; text: string }[] = [];
+  replace(uri: any, range: Range, text: string): void {
+    this.replacements.push({ uri, range, text });
+  }
+}
+
+export let appliedEdits: WorkspaceEdit[] = [];
+let mockDocumentText = '';
+
+export function setMockDocumentText(text: string) {
+  mockDocumentText = text;
+}
+
+export function resetAppliedEdits() {
+  appliedEdits = [];
 }
 
 let mockConfigurations: Record<string, any> = {};
@@ -142,8 +165,13 @@ export const workspace = {
   }),
   openTextDocument: async (uri: any) => ({
     uri,
-    lineAt: (line: number) => ({ text: `Line content at ${line}` }),
+    getText: () => mockDocumentText,
+    lineAt: (line: number) => ({ text: mockDocumentText.split(/\r?\n/)[line] ?? `Line content at ${line}` }),
   }),
+  applyEdit: async (edit: WorkspaceEdit) => {
+    appliedEdits.push(edit);
+    return true;
+  },
 };
 
 export let executedCommands: { command: string; args: any[] }[] = [];
@@ -161,6 +189,12 @@ export const commands = {
 
 export let lastShownTextDocument: { doc: any; options?: any } | undefined;
 export let lastShownErrorMessage: string | undefined;
+export let lastShownWarningMessage: string | undefined;
+
+export function resetShownMessages() {
+  lastShownErrorMessage = undefined;
+  lastShownWarningMessage = undefined;
+}
 export let closedTabs: any[] = [];
 
 export let mockTabGroups: { all: any[]; close: (tab: any) => Promise<boolean> } = {
@@ -207,4 +241,8 @@ export const window = {
   showErrorMessage: (msg: string) => {
     lastShownErrorMessage = msg;
   },
+  showWarningMessage: (msg: string) => {
+    lastShownWarningMessage = msg;
+  },
+  activeTextEditor: undefined as any,
 };

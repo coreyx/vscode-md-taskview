@@ -1,7 +1,9 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import * as vscode from 'vscode';
 import { TaskTreeDataProvider, isMilestoneHeading } from '../../src/views/TaskTreeDataProvider.js';
-import { HeadingNode, SpecGroup } from '../../src/models/types.js';
+import { HeadingNode, SpecGroup, TaskNode } from '../../src/models/types.js';
+import { StateTemplateEngine, OBSIDIAN_TEMPLATE, STANDARD_TEMPLATE } from '../../src/templates/StateTemplateEngine.js';
+import { setMockConfiguration, resetMockConfigurations } from '../mocks/vscode.js';
 
 describe('isMilestoneHeading', () => {
   const defaultKeywords = ['Milestone', 'Release', 'Alpha', 'Beta'];
@@ -139,6 +141,70 @@ describe('TaskTreeDataProvider Heading Icons', () => {
     const treeItem = provider.getTreeItem(heading);
     expect(treeItem.iconPath).toBeInstanceOf(vscode.ThemeIcon);
     expect((treeItem.iconPath as vscode.ThemeIcon).id).toBe('bookmark');
+  });
+});
+
+describe('TaskTreeDataProvider In-Progress Task Icons', () => {
+  const dummyFileUri = vscode.Uri.file('/workspace/spec/tasks.md');
+  const engine = StateTemplateEngine.getInstance();
+
+  const inProgressTask: TaskNode = {
+    type: 'task',
+    id: 't1',
+    fileUri: dummyFileUri,
+    rawText: '- [/] Build feature',
+    cleanText: 'Build feature',
+    char: '/',
+    bracketRange: { line: 0, openBracketCol: 2, charCol: 3, closeBracketCol: 4 },
+    line: 0,
+    indentation: 0,
+    subTasks: [],
+    isCompleted: false,
+  };
+
+  beforeEach(() => {
+    resetMockConfigurations();
+    (engine as any).currentTemplate = OBSIDIAN_TEMPLATE;
+    (engine as any).rebuildIndex();
+  });
+
+  afterEach(() => {
+    resetMockConfigurations();
+    (engine as any).currentTemplate = STANDARD_TEMPLATE;
+    (engine as any).rebuildIndex();
+  });
+
+  it('should display a rotating spinner for in-progress tasks by default', () => {
+    const icon = new TaskTreeDataProvider().getTreeItem(inProgressTask).iconPath as vscode.ThemeIcon;
+    expect(icon.id).toBe('loading~spin');
+    expect((icon as any).color.id).toBe('charts.yellow');
+  });
+
+  it('should display a static circular arrow icon when mdTaskView.animateTaskIcons is disabled', () => {
+    setMockConfiguration('mdTaskView', { animateTaskIcons: false });
+    const icon = new TaskTreeDataProvider().getTreeItem(inProgressTask).iconPath as vscode.ThemeIcon;
+    expect(icon.id).toBe('sync');
+    expect((icon as any).color.id).toBe('charts.yellow');
+  });
+
+  it('should display a static circular arrow icon when accessibility.reducedMotion is on', () => {
+    setMockConfiguration('accessibility', { reducedMotion: 'on' });
+    const icon = new TaskTreeDataProvider().getTreeItem(inProgressTask).iconPath as vscode.ThemeIcon;
+    expect(icon.id).toBe('sync');
+  });
+
+  it('should keep the spinner when accessibility.reducedMotion is off or auto', () => {
+    for (const reducedMotion of ['off', 'auto']) {
+      setMockConfiguration('accessibility', { reducedMotion });
+      const icon = new TaskTreeDataProvider().getTreeItem(inProgressTask).iconPath as vscode.ThemeIcon;
+      expect(icon.id).toBe('loading~spin');
+    }
+  });
+
+  it('should not animate states without an animated icon', () => {
+    const doneTask: TaskNode = { ...inProgressTask, id: 't2', char: 'x', isCompleted: true };
+    const icon = new TaskTreeDataProvider().getTreeItem(doneTask).iconPath as vscode.ThemeIcon;
+    expect(icon.id).toBe('pass-filled');
   });
 });
 
